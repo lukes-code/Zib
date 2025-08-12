@@ -1,0 +1,125 @@
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { NavLink } from "react-router-dom";
+import {
+  ExitIcon,
+  HomeIcon,
+  PlusIcon,
+  HamburgerMenuIcon,
+} from "@radix-ui/react-icons";
+
+export const Nav = () => {
+  const { user, isAdmin, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="p-4 text-black absolute items-start right-6 top-6 sm:hidden">
+        <button
+          onClick={() => setOpen((prev) => !prev)}
+          className="text-white"
+          aria-label="Toggle menu"
+        >
+          <HamburgerMenuIcon color="black" width={24} height={24} />
+        </button>
+      </div>
+
+      {/* Sidebar */}
+      <nav
+        className={`bg-black w-24 h-screen flex flex-col p-6 fixed sm:static top-0 left-0 transform transition-transform duration-300 z-50
+          ${
+            open ? "translate-x-0 w-32" : "-translate-x-full"
+          } sm:translate-x-0`}
+      >
+        <div className="mb-8">
+          <NavLink
+            to="/"
+            className="font-bold text-xl mb-6 w-full flex flex-col justify-center items-center text-white"
+          >
+            Paylien
+          </NavLink>
+
+          <div className="w-full flex flex-col justify-center items-center gap-y-4 mt-12">
+            <NavLink
+              to="/dashboard"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `p-2 rounded-[999px] transition-colors ${
+                  isActive
+                    ? "text-black bg-white"
+                    : "text-white hover:bg-white hover:text-black"
+                }`
+              }
+            >
+              <HomeIcon width={24} height={24} />
+            </NavLink>
+
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `p-2 rounded-[999px] transition-colors ${
+                    isActive
+                      ? "text-black bg-white"
+                      : "text-white hover:bg-white hover:text-black"
+                  }`
+                }
+              >
+                <PlusIcon width={24} height={24} />
+              </NavLink>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-auto w-full flex flex-col justify-center items-center">
+          {user ? (
+            <button
+              onClick={() => {
+                signOut();
+                setOpen(false);
+              }}
+              className="p-2 text-white hover:bg-red-500 rounded-[999px] transition-colors"
+            >
+              <ExitIcon width={18} height={18} />
+            </button>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-red-500 text-sm font-medium"
+                    : "text-sm font-medium text-blue-600 hover:underline"
+                }
+              >
+                Sign In
+              </NavLink>
+              <NavLink
+                to="/register"
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-red-500 text-sm font-medium"
+                    : "text-sm font-medium text-blue-600 hover:underline"
+                }
+              >
+                Sign Up
+              </NavLink>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* Overlay for mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 sm:hidden z-40"
+          onClick={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
+};
