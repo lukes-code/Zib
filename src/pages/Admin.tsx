@@ -170,7 +170,7 @@ const Admin = () => {
   };
 
   const adjustCredits = async (id: string, delta: number) => {
-    const { error } = await supabase.rpc("admin_update_user_credits", {
+    const { error } = await supabase.rpc("admin_update_credits", {
       _user_id: id,
       _delta: delta,
       _note: "manual",

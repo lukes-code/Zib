@@ -6,6 +6,7 @@ import {
   HomeIcon,
   PlusIcon,
   HamburgerMenuIcon,
+  FileTextIcon,
 } from "@radix-ui/react-icons";
 import ConfirmationModal from "./modal";
 
@@ -62,19 +63,34 @@ export const Nav = () => {
             </NavLink>
 
             {isAdmin && (
-              <NavLink
-                to="/admin"
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `p-2 rounded-[999px] transition-colors ${
-                    isActive
-                      ? "text-black bg-white"
-                      : "text-white hover:bg-white hover:text-black"
-                  }`
-                }
-              >
-                <PlusIcon width={24} height={24} />
-              </NavLink>
+              <>
+                <NavLink
+                  to="/admin"
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `p-2 rounded-[999px] transition-colors ${
+                      isActive
+                        ? "text-black bg-white"
+                        : "text-white hover:bg-white hover:text-black"
+                    }`
+                  }
+                >
+                  <PlusIcon width={24} height={24} />
+                </NavLink>
+                <NavLink
+                  to="/logs"
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `p-2 rounded-[999px] transition-colors ${
+                      isActive
+                        ? "text-black bg-white"
+                        : "text-white hover:bg-white hover:text-black"
+                    }`
+                  }
+                >
+                  <FileTextIcon width={24} height={24} />
+                </NavLink>
+              </>
             )}
           </div>
         </div>

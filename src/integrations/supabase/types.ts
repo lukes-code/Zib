@@ -116,6 +116,7 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          author_user_id: string | null
           created_at: string
           event_id: string | null
           id: string
@@ -125,6 +126,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          author_user_id?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -134,6 +136,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          author_user_id?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -143,10 +146,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "transactions_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_target_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -185,8 +202,24 @@ export type Database = {
         Args: { _event_id: string; _user_id: string }
         Returns: undefined
       }
+      admin_update_credits: {
+        Args: {
+          _user_id: string
+          _delta: number
+          _note: string
+          _target_user_id?: string
+        }
+        Returns: undefined
+      }
       admin_update_user_credits: {
-        Args: { _user_id: string; _delta: number; _note?: string }
+        Args:
+          | {
+              _user_id: string
+              _delta: number
+              _note: string
+              _target_user_id?: string
+            }
+          | { _user_id: string; _delta: number; _note?: string }
         Returns: undefined
       }
       has_role: {

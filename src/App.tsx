@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import { AuthProvider } from "./hooks/useAuth";
 import ProtectedRoute, { AdminRoute } from "./components/ProtectedRoute";
 import { Nav } from "./components/ui/nav";
+import Logs from "./pages/Logs";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,15 @@ const App = () => (
               <AdminRoute>
                 <Nav />
                 <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/logs"
+            element={
+              <AdminRoute>
+                <Nav />
+                <Logs />
               </AdminRoute>
             }
           />
