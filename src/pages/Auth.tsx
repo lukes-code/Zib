@@ -18,7 +18,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    document.title = "Login or Register | Paylien Hockey";
+    document.title = "Login or Register | Zib Hockey";
     if (session) navigate("/dashboard");
   }, [session, navigate]);
 
@@ -64,7 +64,7 @@ const AuthPage = () => {
         <h1 className="sr-only">Login or Register</h1>
         <Card>
           <CardHeader>
-            <CardTitle>Welcome to Paylien</CardTitle>
+            <CardTitle>Welcome to Zib</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login">

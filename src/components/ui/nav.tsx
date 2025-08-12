@@ -7,21 +7,27 @@ import {
   PlusIcon,
   HamburgerMenuIcon,
 } from "@radix-ui/react-icons";
+import ConfirmationModal from "./modal";
 
 export const Nav = () => {
   const { user, isAdmin, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   return (
     <>
       {/* Mobile top bar */}
-      <div className="p-4 text-black absolute items-start right-6 top-6 sm:hidden">
+      <div
+        className={` ${
+          open ? "z-20" : "z-[999]"
+        } p-4 text-white absolute items-start right-5 top-10 md:hidden`}
+      >
         <button
           onClick={() => setOpen((prev) => !prev)}
           className="text-white"
           aria-label="Toggle menu"
         >
-          <HamburgerMenuIcon color="black" width={24} height={24} />
+          <HamburgerMenuIcon color="white" width={24} height={24} />
         </button>
       </div>
 
@@ -37,7 +43,7 @@ export const Nav = () => {
             to="/"
             className="font-bold text-xl mb-6 w-full flex flex-col justify-center items-center text-white"
           >
-            Paylien
+            Zib
           </NavLink>
 
           <div className="w-full flex flex-col justify-center items-center gap-y-4 mt-12">
@@ -76,10 +82,7 @@ export const Nav = () => {
         <div className="mt-auto w-full flex flex-col justify-center items-center">
           {user ? (
             <button
-              onClick={() => {
-                signOut();
-                setOpen(false);
-              }}
+              onClick={() => setShowSignOutModal(true)}
               className="p-2 text-white hover:bg-red-500 rounded-[999px] transition-colors"
             >
               <ExitIcon width={18} height={18} />
@@ -120,6 +123,17 @@ export const Nav = () => {
           onClick={() => setOpen(false)}
         />
       )}
+
+      {/* Sign Out Confirmation Modal */}
+      <ConfirmationModal
+        open={showSignOutModal}
+        title="Confirm Sign Out"
+        message="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
+        onConfirm={signOut}
+        onCancel={() => setShowSignOutModal(false)}
+      />
     </>
   );
 };

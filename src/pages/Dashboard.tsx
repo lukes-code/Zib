@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { EventItem } from "@/types";
 import { toast } from "@/components/ui/use-toast";
 import alienBg from "@/assets/images/ufo.jpg";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -17,7 +18,7 @@ const Dashboard = () => {
   const [futureEventsCount, setFutureEventsCount] = useState(0);
 
   useEffect(() => {
-    document.title = "Dashboard | Paylien";
+    document.title = "Dashboard | Zib";
   }, []);
 
   const loadEvents = async () => {
@@ -134,30 +135,46 @@ const Dashboard = () => {
 
         {/* Stats bar */}
         <div className="w-full flex gap-4 bg-white/20 rounded-[25px] overflow-hidden">
-          <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-            <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-              Credits Available
-            </span>
-            <span className="text-2xl font-bold text-left w-full">
-              {credits}
-            </span>
-          </div>
-          <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-            <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-              Past Events Attended
-            </span>
-            <span className="text-2xl font-bold text-left w-full">
-              {pastEventsCount}
-            </span>
-          </div>
-          <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-            <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-              Future Events Attending
-            </span>
-            <span className="text-2xl font-bold text-left w-full">
-              {futureEventsCount}
-            </span>
-          </div>
+          {loading ? (
+            <>
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md"
+                >
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
+                  Credits Available
+                </span>
+                <span className="text-2xl font-bold text-left w-full">
+                  {credits}
+                </span>
+              </div>
+              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
+                  Past Events Attended
+                </span>
+                <span className="text-2xl font-bold text-left w-full">
+                  {pastEventsCount}
+                </span>
+              </div>
+              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
+                  Future Events Attending
+                </span>
+                <span className="text-2xl font-bold text-left w-full">
+                  {futureEventsCount}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         <Separator />
@@ -167,9 +184,23 @@ const Dashboard = () => {
             Upcoming events
           </h2>
           {loading ? (
-            <p className="text-muted-foreground">Loading events…</p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : events.length === 0 ? (
-            <p className="text-muted-foreground">No upcoming events.</p>
+            <p className="text-white">No upcoming events.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {events.map((ev) => {

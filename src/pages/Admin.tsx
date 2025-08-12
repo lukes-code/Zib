@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,24 +7,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { EventItem, Profile } from "@/types";
 import { toast } from "@/components/ui/use-toast";
-
+import alienBg from "@/assets/images/ufo.jpg";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TrashIcon } from "@radix-ui/react-icons";
+import ConfirmationModal from "@/components/ui/modal";
 const Admin = () => {
   const { user } = useAuth();
+
   const [events, setEvents] = useState<EventItem[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [capacity, setCapacity] = useState(26);
-
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmModalAction, setConfirmModalAction] = useState<() => void>(
+    () => {}
+  );
+  const [confirmModalTitle, setConfirmModalTitle] = useState("");
+  const [confirmModalMessage, setConfirmModalMessage] = useState("");
+
   const [attendees, setAttendees] = useState<
     { user_id: string; name: string }[]
   >([]);
 
   useEffect(() => {
-    document.title = "Admin | Paylien";
+    document.title = "Admin | Zib";
   }, []);
 
   const loadEvents = async () => {
@@ -85,16 +96,75 @@ const Admin = () => {
     await loadEvents();
   };
 
+  const handleDeleteEvent = (id: string) => {
+    setConfirmModalTitle("Delete Event");
+    setConfirmModalMessage(
+      "Are you sure you want to delete this event? All attendees will be refunded."
+    );
+    setConfirmModalAction(() => async () => {
+      setConfirmModalOpen(false);
+      // Call your deleteEvent logic here (refunding attendees too)
+      await deleteEvent(id);
+    });
+    setConfirmModalOpen(true);
+  };
+
+  const handleRemoveAttendee = (eventId: string, userId: string) => {
+    setConfirmModalTitle("Remove Attendee");
+    setConfirmModalMessage(
+      "Are you sure you want to remove this attendee and refund their credit?"
+    );
+    setConfirmModalAction(() => async () => {
+      setConfirmModalOpen(false);
+      await removeAttendee(eventId, userId);
+    });
+    setConfirmModalOpen(true);
+  };
+
   const deleteEvent = async (id: string) => {
+    // Load attendees for this event
+    const { data: attendeesData, error: attendeesError } = await supabase
+      .from("event_attendees")
+      .select("user_id")
+      .eq("event_id", id);
+
+    if (attendeesError) {
+      toast({
+        title: "Error loading attendees",
+        description: attendeesError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Refund each attendee by calling the existing RPC
+    for (const attendee of attendeesData ?? []) {
+      const { error } = await supabase.rpc("admin_remove_attendee", {
+        _event_id: id,
+        _user_id: attendee.user_id,
+      });
+      if (error) {
+        toast({
+          title: "Error refunding attendee",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Now delete the event
     const { error } = await supabase.from("events").delete().eq("id", id);
-    if (error)
+    if (error) {
       return toast({
         title: "Delete failed",
         description: error.message,
         variant: "destructive",
       });
-    toast({ title: "Event deleted" });
+    }
+    toast({ title: "Event deleted and attendees refunded" });
     await loadEvents();
+    await loadProfiles();
   };
 
   const adjustCredits = async (id: string, delta: number) => {
@@ -127,7 +197,6 @@ const Admin = () => {
         variant: "destructive",
       });
 
-    // Map data to an array of objects with user_id and name
     const attendees = (data ?? []).map((d: any) => ({
       user_id: d.user_id,
       name: d.profiles?.name || "Unknown",
@@ -154,64 +223,107 @@ const Admin = () => {
   };
 
   return (
-    <main className="flex-1 bg-background p-6 overflow-auto">
-      <section className="container mx-auto p-4 space-y-8">
+    <main className="relative flex-1 bg-gray-50 bg-background overflow-auto">
+      {/* Background image */}
+      <div
+        className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center"
+        style={{ backgroundImage: `url(${alienBg})` }}
+      />
+
+      {/* Page content */}
+      <section className="relative z-10 container mx-auto px-6 py-12 space-y-8">
         <header>
-          <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-white drop-shadow">
+            Admin Dashboard
+          </h1>
+          <p className="text-white text-opacity-90 drop-shadow">
             Manage events, users, and credits.
           </p>
         </header>
-        <Separator />
+
+        <Separator className="border-white border-opacity-20" />
 
         <section className="grid gap-6 md:grid-cols-2">
+          {/* Create Event Card */}
           <Card>
             <CardHeader>
               <CardTitle>Create Event</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <Input
-                placeholder="Description (optional)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <Input
-                type="datetime-local"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-start gap-2">
+                <label htmlFor="title" className="text-md">
+                  Title
+                </label>
                 <Input
+                  name="title"
+                  id="title"
+                  placeholder="Zib zib ble ble"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <label htmlFor="description" className="text-md">
+                  Description
+                </label>
+                <Input
+                  name="description"
+                  id="description"
+                  placeholder="(Optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <label htmlFor="date" className="text-md">
+                  Date
+                </label>
+                <Input
+                  name="date"
+                  id="date"
+                  type="datetime-local"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col items-start gap-2">
+                <label htmlFor="capacity" className="text-md">
+                  Capacity
+                </label>
+                <Input
+                  name="capacity"
+                  id="capacity"
                   type="number"
                   min="0"
                   value={capacity}
                   onChange={(e) => setCapacity(parseInt(e.target.value || "0"))}
                 />
-                <span className="text-sm text-muted-foreground">Capacity</span>
               </div>
-              <Button
-                onClick={createEvent}
-                disabled={!title || !date || capacity < 1}
-              >
-                Create
-              </Button>
+              <div className="flex flex-col items-end justify-end w-full">
+                <Button
+                  onClick={createEvent}
+                  disabled={!title || !date || capacity < 1}
+                >
+                  Create
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
+          {/* Users & Credits Card */}
           <Card>
             <CardHeader>
               <CardTitle>Users & Credits</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 max-h-[420px] overflow-auto">
+            <CardContent className="space-y-3 max-h-[375px] overflow-y-auto">
               {loading ? (
-                <p className="text-muted-foreground">Loading…</p>
+                <>
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-10 rounded-md w-full mb-2" />
+                  ))}
+                </>
               ) : profiles.length === 0 ? (
-                <p className="text-muted-foreground">No users.</p>
+                <p className="text-black">No users.</p>
               ) : (
                 profiles.map((p) => (
                   <div
@@ -226,17 +338,17 @@ const Admin = () => {
                       <span className="text-sm">{p.credits} credits</span>
                       <Button
                         size="sm"
-                        variant="secondary"
-                        onClick={() => adjustCredits(p.id, 1)}
-                      >
-                        +1
-                      </Button>
-                      <Button
-                        size="sm"
                         variant="outline"
                         onClick={() => adjustCredits(p.id, -1)}
                       >
                         -1
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => adjustCredits(p.id, 1)}
+                      >
+                        +1
                       </Button>
                     </div>
                   </div>
@@ -246,9 +358,26 @@ const Admin = () => {
           </Card>
         </section>
 
+        {/* Events Section */}
         <section className="space-y-4">
-          <h2 className="text-xl font-medium">Events</h2>
-          {events.length === 0 ? (
+          <h2 className="text-xl font-medium text-black drop-shadow">Events</h2>
+          {loading ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : events.length === 0 ? (
             <p className="text-muted-foreground">No events created.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -276,9 +405,9 @@ const Admin = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => deleteEvent(ev.id)}
+                        onClick={() => handleDeleteEvent(ev.id)}
                       >
-                        Delete
+                        <TrashIcon />
                       </Button>
                     </div>
                     {selectedEventId === ev.id && (
@@ -299,7 +428,7 @@ const Admin = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() =>
-                                  removeAttendee(ev.id, attendee.user_id)
+                                  handleRemoveAttendee(ev.id, attendee.user_id)
                                 }
                               >
                                 Remove & refund
@@ -316,6 +445,16 @@ const Admin = () => {
           )}
         </section>
       </section>
+
+      <ConfirmationModal
+        open={confirmModalOpen}
+        title={confirmModalTitle}
+        message={confirmModalMessage}
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        onConfirm={confirmModalAction}
+        onCancel={() => setConfirmModalOpen(false)}
+      />
     </main>
   );
 };
