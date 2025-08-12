@@ -1,26 +1,40 @@
-import React from "react";
-import { Button } from "./button";
+import React, { useState, useEffect } from "react";
+import { Button, Variant } from "./button";
+
+type Position = "defender" | "forward" | "goalie" | "any";
 
 interface ConfirmationModalProps {
   open: boolean;
+  onConfirm: (choice?: Position) => void;
+  onCancel: () => void;
+  confirmVariant?: Variant;
   title?: string;
   message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
+  requireChoice?: boolean;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   open,
   title = "Are you sure?",
   message = "This action cannot be undone.",
+  confirmVariant = "danger",
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   onConfirm,
   onCancel,
+  requireChoice = false,
 }) => {
+  const [choice, setChoice] = useState<Position | null>(null);
+
+  useEffect(() => {
+    if (!open) setChoice(null);
+  }, [open]);
+
   if (!open) return null;
+
+  const positions: Position[] = ["defender", "forward", "goalie", "any"];
 
   return (
     <div
@@ -28,16 +42,39 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg"
+        className="bg-white rounded-[7px] p-6 max-w-sm w-full shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
         <p className="mb-6 text-sm text-gray-700">{message}</p>
+
+        {requireChoice && (
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            {positions.map((pos) => (
+              <button
+                key={pos}
+                onClick={() => setChoice(pos)}
+                className={`px-4 py-2 rounded font-semibold text-base border-2 w-full ${
+                  choice === pos
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {pos.charAt(0).toUpperCase() + pos.slice(1)}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button
+            variant={confirmVariant}
+            onClick={() => onConfirm(choice ?? undefined)}
+            disabled={requireChoice && !choice}
+          >
             {confirmLabel}
           </Button>
         </div>

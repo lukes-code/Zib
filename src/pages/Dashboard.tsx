@@ -8,6 +8,8 @@ import type { EventItem } from "@/types";
 import { toast } from "@/components/ui/use-toast";
 import alienBg from "@/assets/images/ufo.jpg";
 import { Skeleton } from "@/components/ui/skeleton";
+import dayjs from "dayjs";
+import ConfirmationModal from "@/components/ui/modal";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -16,6 +18,10 @@ const Dashboard = () => {
   const [joinedEventIds, setJoinedEventIds] = useState<string[]>([]);
   const [pastEventsCount, setPastEventsCount] = useState(0);
   const [futureEventsCount, setFutureEventsCount] = useState(0);
+
+  // State for the modal and selected event & position
+  const [showPositionModal, setShowPositionModal] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = "Dashboard | Zib";
@@ -95,8 +101,15 @@ const Dashboard = () => {
     loadEventCounts();
   }, [profile?.id]);
 
-  const joinEvent = async (id: string) => {
-    const { error } = await supabase.rpc("join_event", { _event_id: id });
+  const joinEventWithPosition = async (
+    id: string,
+    position: "defender" | "forward" | "goalie" | "any"
+  ) => {
+    const { error } = await supabase.rpc("join_event", {
+      _event_id: id,
+      _position: position,
+    });
+
     if (error) {
       toast({
         title: "Unable to join",
@@ -104,7 +117,7 @@ const Dashboard = () => {
         variant: "destructive",
       });
     } else {
-      toast({ title: "Joined event" });
+      toast({ title: `Joined event with position ${position}` });
       await loadEvents();
       await loadJoinedEvents();
       await loadEventCounts();
@@ -213,7 +226,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        {new Date(ev.event_date).toLocaleString()}
+                        {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
                       </p>
                       {ev.description ? (
                         <p className="text-sm">{ev.description}</p>
@@ -223,7 +236,10 @@ const Dashboard = () => {
                       </p>
                       <Button
                         disabled={full || credits < 1 || isGoing}
-                        onClick={() => joinEvent(ev.id)}
+                        onClick={() => {
+                          setSelectedEventId(ev.id);
+                          setShowPositionModal(true);
+                        }}
                       >
                         {isGoing
                           ? "You're going"
@@ -241,6 +257,27 @@ const Dashboard = () => {
           )}
         </section>
       </section>
+
+      {/* Position selection modal */}
+      <ConfirmationModal
+        open={showPositionModal}
+        title="Choose position"
+        message="Please select your position: defender, forward, goalie, or any."
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        requireChoice={true}
+        confirmVariant="primary"
+        onConfirm={(position: "defender" | "forward" | "goalie" | "any") => {
+          if (!position || !selectedEventId) return;
+          joinEventWithPosition(selectedEventId, position);
+          setShowPositionModal(false);
+          setSelectedEventId(null);
+        }}
+        onCancel={() => {
+          setShowPositionModal(false);
+          setSelectedEventId(null);
+        }}
+      />
     </main>
   );
 };

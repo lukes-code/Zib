@@ -18,16 +18,19 @@ export type Database = {
         Row: {
           event_id: string
           joined_at: string
+          position: string | null
           user_id: string
         }
         Insert: {
           event_id: string
           joined_at?: string
+          position?: string | null
           user_id: string
         }
         Update: {
           event_id?: string
           joined_at?: string
+          position?: string | null
           user_id?: string
         }
         Relationships: [
@@ -194,7 +197,7 @@ export type Database = {
         Returns: boolean
       }
       join_event: {
-        Args: { _event_id: string }
+        Args: { _event_id: string; _position?: string }
         Returns: undefined
       }
     }

@@ -33,7 +33,7 @@ export const Nav = () => {
 
       {/* Sidebar */}
       <nav
-        className={`bg-black w-24 h-screen flex flex-col p-6 fixed sm:static top-0 left-0 transform transition-transform duration-300 z-50
+        className={`bg-black w-24 h-screen flex flex-col p-6 fixed top-0 left-0 transform transition-transform duration-300 z-50
           ${
             open ? "translate-x-0 w-32" : "-translate-x-full"
           } sm:translate-x-0`}

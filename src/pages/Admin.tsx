@@ -11,6 +11,8 @@ import alienBg from "@/assets/images/ufo.jpg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrashIcon } from "@radix-ui/react-icons";
 import ConfirmationModal from "@/components/ui/modal";
+import dayjs from "dayjs";
+
 const Admin = () => {
   const { user } = useAuth();
 
@@ -31,7 +33,7 @@ const Admin = () => {
   const [confirmModalMessage, setConfirmModalMessage] = useState("");
 
   const [attendees, setAttendees] = useState<
-    { user_id: string; name: string }[]
+    { user_id: string; name: string; position: string }[]
   >([]);
 
   useEffect(() => {
@@ -187,7 +189,7 @@ const Admin = () => {
     setSelectedEventId(eventId);
     const { data, error } = await supabase
       .from("event_attendees")
-      .select("user_id, profiles(name)")
+      .select("user_id, profiles(name), position")
       .eq("event_id", eventId);
 
     if (error)
@@ -200,6 +202,7 @@ const Admin = () => {
     const attendees = (data ?? []).map((d: any) => ({
       user_id: d.user_id,
       name: d.profiles?.name || "Unknown",
+      position: d.position || "Unknown",
     }));
 
     setAttendees(attendees);
@@ -388,7 +391,7 @@ const Admin = () => {
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <p className="text-sm text-muted-foreground">
-                      {new Date(ev.event_date).toLocaleString()}
+                      {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
                     </p>
                     {ev.description ? (
                       <p className="text-sm">{ev.description}</p>
@@ -421,9 +424,14 @@ const Admin = () => {
                           attendees.map((attendee) => (
                             <div
                               key={attendee.user_id}
-                              className="flex items-center justify-between"
+                              className="flex items-center gap-x-4 justify-between"
                             >
-                              <span className="text-sm">{attendee.name}</span>
+                              <span className="text-sm truncate">
+                                {attendee.name}
+                              </span>
+                              <span className="text-sm capitalize">
+                                {attendee.position}
+                              </span>
                               <Button
                                 size="sm"
                                 variant="outline"

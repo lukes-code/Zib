@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 
-type Variant =
+export type Variant =
   | "primary"
   | "secondary"
   | "danger"
