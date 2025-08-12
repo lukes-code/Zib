@@ -134,7 +134,7 @@ const Dashboard = () => {
         </header>
 
         {/* Stats bar */}
-        <div className="w-full flex gap-4 bg-white/20 rounded-[25px] overflow-hidden">
+        <div className="w-full flex flex-col md:flex-row gap-4 md:bg-white/20 md:rounded-[25px] overflow-hidden">
           {loading ? (
             <>
               {[...Array(3)].map((_, i) => (
@@ -149,25 +149,25 @@ const Dashboard = () => {
             </>
           ) : (
             <>
-              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
                 <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Credits Available
+                  Credits
                 </span>
                 <span className="text-2xl font-bold text-left w-full">
                   {credits}
                 </span>
               </div>
-              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
                 <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Past Events Attended
+                  Attended
                 </span>
                 <span className="text-2xl font-bold text-left w-full">
                   {pastEventsCount}
                 </span>
               </div>
-              <div className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
+              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
                 <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Future Events Attending
+                  Attending
                 </span>
                 <span className="text-2xl font-bold text-left w-full">
                   {futureEventsCount}
@@ -180,7 +180,7 @@ const Dashboard = () => {
         <Separator />
 
         <section>
-          <h2 className="text-xl font-medium mb-4 text-white drop-shadow">
+          <h2 className="text-xl font-medium mb-4 text-black md:text-white drop-shadow">
             Upcoming events
           </h2>
           {loading ? (
@@ -200,7 +200,7 @@ const Dashboard = () => {
               ))}
             </div>
           ) : events.length === 0 ? (
-            <p className="text-white">No upcoming events.</p>
+            <p className="text-black md:text-white">No upcoming events.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {events.map((ev) => {
