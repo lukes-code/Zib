@@ -9,6 +9,7 @@ import {
   FileTextIcon,
 } from "@radix-ui/react-icons";
 import ConfirmationModal from "./modal";
+import { StoreIcon } from "lucide-react";
 
 export const Nav = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -60,6 +61,19 @@ export const Nav = () => {
               }
             >
               <HomeIcon width={24} height={24} />
+            </NavLink>
+            <NavLink
+              to="/storefront"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `p-2 rounded-[999px] transition-colors ${
+                  isActive
+                    ? "text-black bg-white"
+                    : "text-white hover:bg-white hover:text-black"
+                }`
+              }
+            >
+              <StoreIcon width={24} height={24} />
             </NavLink>
 
             {isAdmin && (

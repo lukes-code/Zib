@@ -12,6 +12,7 @@ import ProtectedRoute, { AdminRoute } from "./components/ProtectedRoute";
 import { Nav } from "./components/ui/nav";
 import Logs from "./pages/Logs";
 import ResetPasswordPage from "./pages/ResetPassword";
+import Storefront from "./pages/Storefront";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,15 @@ const App = () => (
               <ProtectedRoute>
                 <Nav />
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/storefront"
+            element={
+              <ProtectedRoute>
+                <Nav />
+                <Storefront />
               </ProtectedRoute>
             }
           />
