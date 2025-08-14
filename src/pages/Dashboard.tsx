@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import type { EventItem } from "@/types";
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import alienBg from "@/assets/images/ufo.jpg";
 import { Skeleton } from "@/components/ui/skeleton";
 import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ui/modal";
+import { toast } from "react-toastify";
+import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
+import { MapPinIcon, UsersIcon } from "lucide-react";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -37,11 +39,8 @@ const Dashboard = () => {
       .order("event_date", { ascending: true });
 
     if (error) {
-      toast({
-        title: "Failed to load events",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Failed to load events
+      toast.error(error.message);
     } else {
       setEvents((data ?? []) as EventItem[]);
     }
@@ -56,11 +55,8 @@ const Dashboard = () => {
       .eq("user_id", profile.id);
 
     if (error) {
-      toast({
-        title: "Failed to load joined events",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Failed to load joined events
+      toast.error(error.message);
     } else {
       setJoinedEventIds((data ?? []).map((d) => d.event_id));
     }
@@ -75,11 +71,8 @@ const Dashboard = () => {
       .eq("user_id", profile.id);
 
     if (error) {
-      toast({
-        title: "Failed to load event counts",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Failed to load event counts
+      toast.error(error.message);
       return;
     }
 
@@ -111,13 +104,10 @@ const Dashboard = () => {
     });
 
     if (error) {
-      toast({
-        title: "Unable to join",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Failed to join event
+      toast.error(error.message);
     } else {
-      toast({ title: `Joined event with position ${position}` });
+      toast(`Joined event with position ${position}`);
       await loadEvents();
       await loadJoinedEvents();
       await loadEventCounts();
@@ -219,27 +209,78 @@ const Dashboard = () => {
               {events.map((ev) => {
                 const isGoing = joinedEventIds.includes(ev.id);
                 const full = ev.attendees_count >= ev.capacity;
+                const spotsLeft = ev.capacity - ev.attendees_count;
+
                 return (
-                  <Card key={ev.id}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{ev.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
-                      </p>
-                      {ev.description ? (
-                        <p className="text-sm">{ev.description}</p>
-                      ) : null}
-                      <p className="text-sm">
-                        {ev.attendees_count}/{ev.capacity} spots
-                      </p>
+                  <Card key={ev.id} className="relative overflow-hidden">
+                    <CardContent className="space-y-3 p-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">{ev.title}</h3>
+                        <p className="text-sm text-gray-500">
+                          {ev.description ? ev.description : "No description"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <CalendarIcon className="w-4 h-4" />{" "}
+                          {dayjs(ev.event_date).format("ddd, MMM D")}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ClockIcon className="w-4 h-4" />{" "}
+                          {dayjs(ev.event_date).format("h:mm A")}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <UsersIcon className="w-4 h-4" /> {ev.attendees_count}
+                          /{ev.capacity} attending
+                        </div>
+                        <div className="pt-6">
+                          <div className="w-full h-2 bg-gray-200 rounded-full">
+                            <div
+                              className="h-2 rounded-full"
+                              style={{
+                                width: `${
+                                  (ev.attendees_count / ev.capacity) * 100
+                                }%`,
+                                backgroundColor:
+                                  ev.attendees_count / ev.capacity < 0.5
+                                    ? "#3b82f6" // blue
+                                    : ev.attendees_count / ev.capacity < 0.8
+                                    ? "#f59e0b" // orange
+                                    : "#ef4444", // red
+                              }}
+                            />
+                          </div>
+
+                          <p
+                            className="text-xs"
+                            style={{
+                              color:
+                                ev.attendees_count / ev.capacity < 0.5
+                                  ? "#3b82f6"
+                                  : ev.attendees_count / ev.capacity < 0.8
+                                  ? "#f59e0b"
+                                  : "#ef4444",
+                            }}
+                          >
+                            {spotsLeft > 0
+                              ? `${spotsLeft} ${
+                                  spotsLeft === 1 ? "spot" : "spots"
+                                } left`
+                              : "Session full"}
+                          </p>
+                        </div>
+                      </div>
+
                       <Button
-                        disabled={full || credits < 1 || isGoing}
+                        className="w-full"
+                        variant={isGoing ? "secondary" : "primary"}
                         onClick={() => {
+                          if (isGoing) return;
                           setSelectedEventId(ev.id);
                           setShowPositionModal(true);
                         }}
+                        disabled={full || credits < 1 || isGoing}
                       >
                         {isGoing
                           ? "You're going"
@@ -247,7 +288,7 @@ const Dashboard = () => {
                           ? "Full"
                           : credits < 1
                           ? "Not enough credits"
-                          : "Join (1 credit)"}
+                          : "Attend event"}
                       </Button>
                     </CardContent>
                   </Card>

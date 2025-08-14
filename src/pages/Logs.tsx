@@ -1,6 +1,6 @@
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface Transaction {
   id: string;
@@ -39,11 +39,8 @@ const Logs: React.FC = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({
-        title: "Failed to load transactions",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Failed to load transactions
+      toast.error(error.message);
     } else {
       const formatted = (data ?? []).map((tx) => ({
         ...tx,
@@ -59,11 +56,7 @@ const Logs: React.FC = () => {
 
   const copyToClipboard = (id: string) => {
     navigator.clipboard.writeText(id).then(() => {
-      toast({
-        title: "Copied to clipboard",
-        description: `Transaction ID ${id} copied`,
-        variant: "default",
-      });
+      toast(`Transaction ID ${id} copied`);
     });
   };
 

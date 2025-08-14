@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
 import type { Profile } from "@/types";
+import { toast } from "react-toastify";
 
 interface AuthContextValue {
   user: User | null;
@@ -15,6 +15,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   updateName: (name: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>; // added
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -33,7 +34,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        // Defer fetching to avoid deadlocks
         setTimeout(async () => {
           await Promise.all([fetchProfile(), fetchIsAdmin(sess.user.id)]);
         }, 0);
@@ -62,39 +62,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .select("*")
       .eq("id", user.id)
       .single();
-    if (!error) {
-      setProfile(data);
-    }
+    if (!error) setProfile(data);
   };
 
   const fetchProfile = async () => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      toast({
-        title: "Not logged in",
-        description: error?.message || "User not found",
-        variant: "destructive",
-      });
+    const { data: userData, error } = await supabase.auth.getUser();
+    if (error || !userData.user) {
+      toast.error(error?.message || "User not found");
       return;
     }
 
     const { data, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, name, credits, created_at, updated_at")
-      .eq("id", user.id)
+      .eq("id", userData.user.id)
       .maybeSingle();
 
     if (profileError) {
-      console.error("Fetch profile error", profileError);
-      toast({
-        title: "Profile error",
-        description: profileError.message,
-        variant: "destructive",
-      });
+      toast.error(profileError.message);
       return;
     }
 
@@ -107,7 +92,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       _role: "admin",
     });
     if (error) {
-      console.error("Admin check error", error);
       setIsAdmin(false);
       return;
     }
@@ -120,14 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       password,
     });
     if (error) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
       throw error;
     }
-    toast({ title: "Signed in" });
   };
 
   const signUp = async (name: string, email: string, password: string) => {
@@ -135,24 +114,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { name },
-      },
+      options: { emailRedirectTo: redirectUrl, data: { name } },
     });
     if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
       throw error;
     }
-    toast({
-      title: "Sign up successful",
-      description:
-        "Check your email to confirm, or disable confirmations while testing.",
-    });
+    toast("Check your email to confirm your account.");
   };
 
   const signOut = async () => {
@@ -168,15 +136,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .update({ name })
       .eq("id", user.id);
     if (error) {
-      toast({
-        title: "Update failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
       throw error;
     }
-    toast({ title: "Profile updated" });
+    toast("Profile updated");
     await fetchProfile();
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
   };
 
   const value = useMemo(
@@ -191,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signOut,
       updateName,
       refreshProfile,
+      resetPassword,
     }),
     [user, session, profile, isAdmin, loading]
   );

@@ -6,12 +6,12 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { EventItem, Profile } from "@/types";
-import { toast } from "@/components/ui/use-toast";
 import alienBg from "@/assets/images/ufo.jpg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrashIcon } from "@radix-ui/react-icons";
 import ConfirmationModal from "@/components/ui/modal";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -47,12 +47,7 @@ const Admin = () => {
         "id, title, description, event_date, capacity, attendees_count, created_by"
       )
       .order("event_date", { ascending: true });
-    if (error)
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    if (error) toast.error(error.message);
     setEvents((data ?? []) as EventItem[]);
   };
   const loadProfiles = async () => {
@@ -60,12 +55,7 @@ const Admin = () => {
       .from("profiles")
       .select("id, email, name, credits, created_at, updated_at")
       .order("created_at", { ascending: false });
-    if (error)
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    if (error) toast.error(error.message);
     setProfiles((data ?? []) as Profile[]);
   };
 
@@ -85,12 +75,9 @@ const Admin = () => {
       created_by: user?.id ?? null,
     });
     if (error)
-      return toast({
-        title: "Create failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    toast({ title: "Event created" });
+      // Create failed
+      return toast.error(error.message);
+    toast("Event created");
     setTitle("");
     setDescription("");
     setDate("");
@@ -131,11 +118,8 @@ const Admin = () => {
       .eq("event_id", id);
 
     if (attendeesError) {
-      toast({
-        title: "Error loading attendees",
-        description: attendeesError.message,
-        variant: "destructive",
-      });
+      // Error loading attendees
+      toast.error(attendeesError.message);
       return;
     }
 
@@ -146,11 +130,8 @@ const Admin = () => {
         _user_id: attendee.user_id,
       });
       if (error) {
-        toast({
-          title: "Error refunding attendee",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Refund failed for this attendee
+        toast.error("Error refunding attendee");
         return;
       }
     }
@@ -158,13 +139,10 @@ const Admin = () => {
     // Now delete the event
     const { error } = await supabase.from("events").delete().eq("id", id);
     if (error) {
-      return toast({
-        title: "Delete failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Delete failed
+      return toast.error(error.message);
     }
-    toast({ title: "Event deleted and attendees refunded" });
+    toast("Event deleted and attendees refunded");
     await loadEvents();
     await loadProfiles();
   };
@@ -176,12 +154,9 @@ const Admin = () => {
       _note: "manual",
     });
     if (error)
-      return toast({
-        title: "Update failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    toast({ title: `Credits ${delta > 0 ? "added" : "removed"}` });
+      // Adjust credits failed
+      return toast.error(error.message);
+    toast(`Credits ${delta > 0 ? "added" : "removed"}`);
     await loadProfiles();
   };
 
@@ -192,12 +167,7 @@ const Admin = () => {
       .select("user_id, profiles(name), position")
       .eq("event_id", eventId);
 
-    if (error)
-      return toast({
-        title: "Load attendees failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    if (error) return toast.error(error.message);
 
     const attendees = (data ?? []).map((d: any) => ({
       user_id: d.user_id,
@@ -214,12 +184,9 @@ const Admin = () => {
       _user_id: userId,
     });
     if (error)
-      return toast({
-        title: "Removal failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    toast({ title: "Attendee removed and refunded" });
+      // Remove attendee failed
+      return toast.error(error.message);
+    toast("Attendee removed and refunded");
     await viewAttendees(eventId);
     await loadEvents();
     await loadProfiles();
