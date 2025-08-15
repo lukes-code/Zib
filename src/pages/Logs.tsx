@@ -67,7 +67,7 @@ const Logs: React.FC = () => {
   if (loading) return <p>Loading event log...</p>;
 
   return (
-    <main className="relative bg-gray-50 flex-1 bg-background overflow-auto">
+    <main className="relative bg-gray-50 flex-1 bg-background overflow-auto sm:ml-[96px] transition-all duration-300">
       <section className="relative z-10 container mx-auto px-6 pt-12 space-y-6">
         <h1 className="text-2xl font-bold mb-4">Event Log</h1>
 

@@ -193,7 +193,7 @@ const Admin = () => {
   };
 
   return (
-    <main className="relative flex-1 bg-gray-50 bg-background overflow-auto">
+    <main className="relative bg-gray-50 flex-1 bg-background overflow-auto sm:ml-[96px] transition-all duration-300">
       {/* Background image */}
       <div
         className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center"
