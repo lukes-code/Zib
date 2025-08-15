@@ -27,7 +27,7 @@ const Dashboard = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = "Dashboard | Zib";
+    document.title = "Dashboard | Pentyrch Aliens";
   }, []);
 
   const loadEvents = async () => {
@@ -305,7 +305,7 @@ const Dashboard = () => {
       <ConfirmationModal
         open={showPositionModal}
         title="Choose position"
-        message="Please select your position: defender, forward, goalie, or any."
+        message="Please select your position"
         confirmLabel="Confirm"
         cancelLabel="Cancel"
         requireChoice={true}

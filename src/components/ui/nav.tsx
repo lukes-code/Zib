@@ -158,9 +158,9 @@ export const Nav = () => {
       {/* Sign Out Confirmation Modal */}
       <ConfirmationModal
         open={showSignOutModal}
-        title="Confirm Sign Out"
+        title="Confirm sign out"
         message="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        confirmLabel="Sign out"
         cancelLabel="Cancel"
         onConfirm={signOut}
         onCancel={() => setShowSignOutModal(false)}

@@ -7,7 +7,7 @@ const Index = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    document.title = "Zib";
+    document.title = "Pentyrch Aliens";
     if (!loading) navigate(user ? "/dashboard" : "/auth", { replace: true });
   }, [user, loading, navigate]);
 

@@ -37,7 +37,7 @@ const Admin = () => {
   >([]);
 
   useEffect(() => {
-    document.title = "Admin | Zib";
+    document.title = "Admin | Pentyrch Aliens";
   }, []);
 
   const loadEvents = async () => {
