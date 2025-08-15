@@ -12,6 +12,7 @@ import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
+import MiniCalendar from "@/components/ui/MiniCalendar";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -206,6 +207,7 @@ const Dashboard = () => {
             <p className="text-black md:text-white">No upcoming events.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {/* <MiniCalendar events={events} joinedEventIds={joinedEventIds} /> */}
               {events.map((ev) => {
                 const isGoing = joinedEventIds.includes(ev.id);
                 const full = ev.attendees_count >= ev.capacity;
