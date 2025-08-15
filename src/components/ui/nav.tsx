@@ -10,6 +10,7 @@ import {
 } from "@radix-ui/react-icons";
 import ConfirmationModal from "./modal";
 import { StoreIcon } from "lucide-react";
+import logo from "@/assets/images/logo.png";
 
 export const Nav = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -45,7 +46,7 @@ export const Nav = () => {
             to="/"
             className="font-bold text-xl mb-6 w-full flex flex-col justify-center items-center text-white"
           >
-            Zib
+            <img src={logo} alt="Illustration" className="w-full h-full" />
           </NavLink>
 
           <div className="w-full flex flex-col justify-center items-center gap-y-4 mt-12">
