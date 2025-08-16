@@ -5,6 +5,7 @@ export interface Profile {
   credits: number;
   created_at: string;
   updated_at: string;
+  registered: boolean;
 }
 
 export interface EventItem {
@@ -17,4 +18,8 @@ export interface EventItem {
   created_by?: string | null;
 }
 
-export type TransactionType = 'credit_grant' | 'credit_revoke' | 'join_event' | 'refund_event';
+export type TransactionType =
+  | "credit_grant"
+  | "credit_revoke"
+  | "join_event"
+  | "refund_event";

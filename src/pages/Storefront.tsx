@@ -17,29 +17,9 @@ type StoreItem = {
 };
 
 const Storefront = () => {
-  const { profile } = useAuth();
-  const [items, setItems] = useState<StoreItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     document.title = "Store | My Platform";
-    loadItems();
   }, []);
-
-  const loadItems = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("store_items")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setItems(data ?? []);
-    }
-    setLoading(false);
-  };
 
   return (
     <main className="relative bg-gray-50 flex-1 bg-background overflow-auto sm:ml-[96px] transition-all duration-300">
@@ -58,52 +38,6 @@ const Storefront = () => {
         <Separator />
 
         <section>
-          {/* <h2 className="text-xl font-medium mb-4 text-black md:text-white drop-shadow">
-            Available items
-          </h2> */}
-
-          {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <Skeleton className="h-5 w-3/4" />
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-10 w-full rounded-md" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : items.length === 0 ? (
-            // <p className="text-black md:text-white">No items available.</p>
-            <></>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {items.map((item) => (
-                <Card key={item.id} className="relative overflow-hidden">
-                  <CardContent className="space-y-3 p-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">{item.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {item.description || "No description"}
-                      </p>
-                      <p className="text-sm font-bold">{item.price} USD</p>
-                      <p className="text-sm text-gray-600">
-                        {item.stock > 0
-                          ? `${item.stock} in stock`
-                          : "Out of stock"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
           {/* UFO */}
           <div className="relative mt-15 z-10 flex flex-col items-center justify-center space-y-6">
             <div className="animate-float relative w-52 h-28">

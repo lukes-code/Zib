@@ -93,6 +93,7 @@ export type Database = {
           email: string
           id: string
           name: string | null
+          registered: boolean
           updated_at: string
         }
         Insert: {
@@ -101,6 +102,7 @@ export type Database = {
           email: string
           id: string
           name?: string | null
+          registered?: boolean
           updated_at?: string
         }
         Update: {
@@ -109,50 +111,10 @@ export type Database = {
           email?: string
           id?: string
           name?: string | null
+          registered?: boolean
           updated_at?: string
         }
         Relationships: []
-      }
-      store_items: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          name: string
-          owner_id: string | null
-          price: number
-          stock: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          name: string
-          owner_id?: string | null
-          price: number
-          stock?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          name?: string
-          owner_id?: string | null
-          price?: number
-          stock?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_items_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       transactions: {
         Row: {

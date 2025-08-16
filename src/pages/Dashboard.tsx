@@ -10,7 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
-import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
+import {
+  CalendarIcon,
+  ClockIcon,
+  SpaceEvenlyHorizontallyIcon,
+} from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
 import MiniCalendar from "@/components/ui/MiniCalendar";
 
@@ -135,6 +139,13 @@ const Dashboard = () => {
               {profile?.name || "User"}
             </span>
           </h1>
+          <span
+            className={`${
+              profile?.registered ? "bg-green-500 shadow-sm" : "bg-red-500"
+            } text-white py-1 px-2 rounded-full mt-1 text-sm`}
+          >
+            {profile?.registered ? "Registered" : "Unregistered player"}
+          </span>
         </header>
 
         {/* Stats bar */}
