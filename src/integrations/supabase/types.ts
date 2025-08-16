@@ -116,6 +116,36 @@ export type Database = {
         }
         Relationships: []
       }
+      store_items: {
+        Row: {
+          clickthrough_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string | null
+          price: string | null
+        }
+        Insert: {
+          clickthrough_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string | null
+          price?: string | null
+        }
+        Update: {
+          clickthrough_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string | null
+          price?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number

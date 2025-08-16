@@ -10,11 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
-import {
-  CalendarIcon,
-  ClockIcon,
-  SpaceEvenlyHorizontallyIcon,
-} from "@radix-ui/react-icons";
+import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
 import MiniCalendar from "@/components/ui/MiniCalendar";
 
