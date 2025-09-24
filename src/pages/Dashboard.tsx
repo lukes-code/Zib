@@ -12,7 +12,6 @@ import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
-import MiniCalendar from "@/components/ui/MiniCalendar";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -21,6 +20,7 @@ const Dashboard = () => {
   const [joinedEventIds, setJoinedEventIds] = useState<string[]>([]);
   const [pastEventsCount, setPastEventsCount] = useState(0);
   const [futureEventsCount, setFutureEventsCount] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // State for the modal and selected event & position
   const [showPositionModal, setShowPositionModal] = useState(false);
@@ -188,7 +188,29 @@ const Dashboard = () => {
           )}
         </div>
 
-        <Separator />
+        <section className="flex items-center gap-x-2">
+          <a
+            href={`https://buy.stripe.com/9B65kD2LEc55fD1bpP4wM00?prefilled_email=${profile?.email}`}
+            target="_blank"
+          >
+            <Button>Buy 1 credit</Button>
+          </a>
+          <div className="relative inline-block">
+            <Button onClick={() => setShowTooltip((prev) => !prev)}>
+              Bulk buy credits and save
+            </Button>
+
+            {showTooltip && (
+              <ConfirmationModal
+                open={showTooltip}
+                hideButtons={true}
+                onCancel={() => setShowTooltip(false)}
+                title="Bulk buy"
+                message="For bulk orders and savings, please contact Jan in the WhatsApp group."
+              />
+            )}
+          </div>
+        </section>
 
         <section>
           <h2 className="text-xl font-medium mb-4 text-black md:text-white drop-shadow">

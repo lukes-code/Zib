@@ -5,14 +5,15 @@ type Position = "defender" | "forward" | "goalie" | "any";
 
 interface ConfirmationModalProps {
   open: boolean;
-  onConfirm: (choice?: Position) => void;
-  onCancel: () => void;
+  onConfirm?: (choice?: Position) => void;
+  onCancel?: () => void;
   confirmVariant?: Variant;
   title?: string;
   message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   requireChoice?: boolean;
+  hideButtons?: boolean;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -25,6 +26,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   onCancel,
   requireChoice = false,
+  hideButtons = false,
 }) => {
   const [choice, setChoice] = useState<Position | null>(null);
 
@@ -45,7 +47,18 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         className="bg-white rounded-[7px] p-6 max-w-sm w-full shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold">{title}</h3>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <p className="mb-6 text-sm text-gray-700">{message}</p>
 
         {requireChoice && (
@@ -66,18 +79,20 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </div>
         )}
 
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onCancel}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={confirmVariant}
-            onClick={() => onConfirm(choice ?? undefined)}
-            disabled={requireChoice && !choice}
-          >
-            {confirmLabel}
-          </Button>
-        </div>
+        {hideButtons ? null : (
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+            <Button
+              variant={confirmVariant}
+              onClick={() => onConfirm(choice ?? undefined)}
+              disabled={requireChoice && !choice}
+            >
+              {confirmLabel}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
