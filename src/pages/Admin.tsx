@@ -444,27 +444,40 @@ const Admin = () => {
                       <p className="text-sm">
                         {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
                       </p>
-                      {ev.type && <p className="text-sm">{ev.type}</p>}
+                      {ev.type && (
+                        <p className="text-sm capitalize">{ev.type}</p>
+                      )}
                       {ev.description && (
                         <p className="text-sm">{ev.description}</p>
                       )}
-                      <p className="text-sm">
-                        {ev.attendees_count}/{ev.capacity} spots
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="secondary"
-                          onClick={() => viewAttendees(ev.id)}
-                        >
-                          View attendees
-                        </Button>
+                      {ev.type === "training" ? (
+                        <>
+                          <p className="text-sm">
+                            {ev.attendees_count}/{ev.capacity} spots
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="secondary"
+                              onClick={() => viewAttendees(ev.id)}
+                            >
+                              View attendees
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleDeleteEvent(ev.id)}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
                         <Button
                           variant="outline"
                           onClick={() => handleDeleteEvent(ev.id)}
                         >
                           <TrashIcon />
                         </Button>
-                      </div>
+                      )}
                       {selectedEventId === ev.id && (
                         <div className="pt-2 space-y-2">
                           <div className="flex flex-col">
