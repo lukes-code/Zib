@@ -60,6 +60,7 @@ export type Database = {
           event_date: string
           id: string
           title: string
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -71,6 +72,7 @@ export type Database = {
           event_date: string
           id?: string
           title: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -82,6 +84,7 @@ export type Database = {
           event_date?: string
           id?: string
           title?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -95,6 +98,7 @@ export type Database = {
           name: string | null
           registered: boolean
           updated_at: string
+          user_roles: string | null
         }
         Insert: {
           created_at?: string
@@ -104,6 +108,7 @@ export type Database = {
           name?: string | null
           registered?: boolean
           updated_at?: string
+          user_roles?: string | null
         }
         Update: {
           created_at?: string
@@ -113,6 +118,7 @@ export type Database = {
           name?: string | null
           registered?: boolean
           updated_at?: string
+          user_roles?: string | null
         }
         Relationships: []
       }
@@ -154,6 +160,7 @@ export type Database = {
           event_id: string | null
           id: string
           metadata: Json | null
+          payment_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -164,6 +171,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           metadata?: Json | null
+          payment_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -174,6 +182,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           metadata?: Json | null
+          payment_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
@@ -244,17 +253,20 @@ export type Database = {
         }
         Returns: undefined
       }
-      admin_update_user_credits: {
-        Args:
-          | {
+      admin_update_user_credits:
+        | {
+            Args: { _delta: number; _note?: string; _user_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
               _delta: number
               _note: string
               _target_user_id?: string
               _user_id: string
             }
-          | { _delta: number; _note?: string; _user_id: string }
-        Returns: undefined
-      }
+            Returns: undefined
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

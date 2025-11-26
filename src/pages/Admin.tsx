@@ -26,6 +26,7 @@ const Admin = () => {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [capacity, setCapacity] = useState(26);
+  const [type, setType] = useState("training");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -93,7 +94,7 @@ const Admin = () => {
     const { data, error } = await supabase
       .from("events")
       .select(
-        "id, title, description, event_date, capacity, attendees_count, created_by"
+        "id, title, description, event_date, capacity, attendees_count, created_by, type"
       )
       .order("event_date", { ascending: true });
     if (error) toast.error(error.message);
@@ -115,13 +116,14 @@ const Admin = () => {
   }, []);
 
   const createEvent = async () => {
-    if (!title || !date || capacity < 1) return;
+    if (!title || !date || (type === "training" && capacity < 1)) return;
     const { error } = await supabase.from("events").insert({
       title,
       description: description || null,
       event_date: new Date(date).toISOString(),
-      capacity,
+      capacity: type === "training" ? capacity : 1,
       created_by: user?.id ?? null,
+      type,
     });
     if (error)
       // Create failed
@@ -131,6 +133,7 @@ const Admin = () => {
     setDescription("");
     setDate("");
     setCapacity(26);
+    setType("training");
     await loadEvents();
   };
 
@@ -141,7 +144,7 @@ const Admin = () => {
     );
     setConfirmModalAction(() => async () => {
       setConfirmModalOpen(false);
-      // Call your deleteEvent logic here (refunding attendees too)
+      // Call deleteEvent logic here (refunding attendees too)
       await deleteEvent(id);
     });
     setConfirmModalOpen(true);
@@ -286,6 +289,23 @@ const Admin = () => {
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
+
+              <div className="flex flex-col items-start gap-2">
+                <label htmlFor="type" className="text-md">
+                  Type
+                </label>
+                <select
+                  name="type"
+                  id="type"
+                  className="w-full border rounded-md p-2"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  <option value="training">Training</option>
+                  <option value="game">Game</option>
+                </select>
+              </div>
+
               <div className="flex flex-col items-start gap-2">
                 <label htmlFor="description" className="text-md">
                   Description
@@ -298,6 +318,7 @@ const Admin = () => {
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+
               <div className="flex flex-col items-start gap-2">
                 <label htmlFor="date" className="text-md">
                   Date
@@ -310,19 +331,25 @@ const Admin = () => {
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
-              <div className="flex flex-col items-start gap-2">
-                <label htmlFor="capacity" className="text-md">
-                  Capacity
-                </label>
-                <Input
-                  name="capacity"
-                  id="capacity"
-                  type="number"
-                  min="0"
-                  value={capacity}
-                  onChange={(e) => setCapacity(parseInt(e.target.value || "0"))}
-                />
-              </div>
+
+              {type === "training" && (
+                <div className="flex flex-col items-start gap-2">
+                  <label htmlFor="capacity" className="text-md">
+                    Capacity
+                  </label>
+                  <Input
+                    name="capacity"
+                    id="capacity"
+                    type="number"
+                    min="0"
+                    value={capacity}
+                    onChange={(e) =>
+                      setCapacity(parseInt(e.target.value || "0"))
+                    }
+                  />
+                </div>
+              )}
+
               <div className="flex flex-col items-end justify-end w-full">
                 <Button
                   onClick={createEvent}
@@ -339,7 +366,11 @@ const Admin = () => {
             <CardHeader>
               <CardTitle>Users & Credits</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 max-h-[375px] overflow-y-auto">
+            <CardContent
+              className={`space-y-3  overflow-y-auto ${
+                type === "training" ? "max-h-[475px]" : "max-h-[400px]"
+              }`}
+            >
               <Tabs defaultValue="registered" className="w-full">
                 <TabsList className="grid grid-cols-2 rounded-xl overflow-hidden border mb-6">
                   <TabsTrigger
@@ -393,6 +424,7 @@ const Admin = () => {
                       <p className="text-sm">
                         {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
                       </p>
+                      {ev.type && <p className="text-sm">{ev.type}</p>}
                       {ev.description && (
                         <p className="text-sm">{ev.description}</p>
                       )}
@@ -501,6 +533,7 @@ const Admin = () => {
                       <p className="text-sm">
                         {dayjs(ev.event_date).format("MMM D, YYYY h:mm A")}
                       </p>
+                      {ev.type && <p className="text-sm">{ev.type}</p>}
                       {ev.description && (
                         <p className="text-sm">{ev.description}</p>
                       )}

@@ -12,6 +12,7 @@ import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
+import { downloadICS } from "@/helpers/downloadICS";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -22,7 +23,6 @@ const Dashboard = () => {
   const [futureEventsCount, setFutureEventsCount] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // State for the modal and selected event & position
   const [showPositionModal, setShowPositionModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -34,17 +34,13 @@ const Dashboard = () => {
     const { data, error } = await supabase
       .from("events")
       .select(
-        "id, title, description, event_date, capacity, attendees_count, created_by"
+        "id, title, description, event_date, capacity, attendees_count, created_by, type"
       )
       .gte("event_date", new Date().toISOString())
       .order("event_date", { ascending: true });
 
-    if (error) {
-      // Failed to load events
-      toast.error(error.message);
-    } else {
-      setEvents((data ?? []) as EventItem[]);
-    }
+    if (error) toast.error(error.message);
+    else setEvents((data ?? []) as EventItem[]);
     setLoading(false);
   };
 
@@ -117,6 +113,10 @@ const Dashboard = () => {
   };
 
   const credits = useMemo(() => profile?.credits ?? 0, [profile]);
+
+  const handleAddToCalendar = (ev: EventItem) => {
+    downloadICS(ev);
+  };
 
   return (
     <main className="relative bg-gray-50 flex-1 bg-background overflow-auto sm:ml-[96px] transition-all duration-300">
@@ -216,6 +216,7 @@ const Dashboard = () => {
           <h2 className="text-xl font-medium mb-4 text-black md:text-white drop-shadow">
             Upcoming events
           </h2>
+
           {loading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -236,7 +237,6 @@ const Dashboard = () => {
             <p className="text-black md:text-white">No upcoming events.</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {/* <MiniCalendar events={events} joinedEventIds={joinedEventIds} /> */}
               {events.map((ev) => {
                 const isGoing = joinedEventIds.includes(ev.id);
                 const full = ev.attendees_count >= ev.capacity;
@@ -244,15 +244,16 @@ const Dashboard = () => {
 
                 return (
                   <Card key={ev.id} className="relative overflow-hidden">
-                    <CardContent className="space-y-3 p-4">
+                    <CardContent className="space-y-3 p-4 flex flex-col h-full">
                       <div>
                         <h3 className="text-lg font-semibold">{ev.title}</h3>
                         <p className="text-sm text-gray-500">
-                          {ev.description ? ev.description : "No description"}
+                          <span className="capitalize">{ev.type}</span>
+                          {ev.description ? ` - ${ev.description}` : null}
                         </p>
                       </div>
 
-                      <div className="space-y-1 text-sm text-gray-600">
+                      <div className="space-y-1 text-sm text-gray-600 flex-1">
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="w-4 h-4" />{" "}
                           {dayjs(ev.event_date).format("ddd, MMM D")}
@@ -261,66 +262,92 @@ const Dashboard = () => {
                           <ClockIcon className="w-4 h-4" />{" "}
                           {dayjs(ev.event_date).format("h:mm A")}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <UsersIcon className="w-4 h-4" /> {ev.attendees_count}
-                          /{ev.capacity} attending
-                        </div>
-                        <div className="pt-6">
-                          <div className="w-full h-2 bg-gray-200 rounded-full">
-                            <div
-                              className="h-2 rounded-full"
-                              style={{
-                                width: `${
-                                  (ev.attendees_count / ev.capacity) * 100
-                                }%`,
-                                backgroundColor:
-                                  ev.attendees_count / ev.capacity < 0.5
-                                    ? "#3b82f6" // blue
-                                    : ev.attendees_count / ev.capacity < 0.8
-                                    ? "#f59e0b" // orange
-                                    : "#ef4444", // red
-                              }}
-                            />
-                          </div>
 
-                          <p
-                            className="text-xs"
-                            style={{
-                              color:
-                                ev.attendees_count / ev.capacity < 0.5
-                                  ? "#3b82f6"
-                                  : ev.attendees_count / ev.capacity < 0.8
-                                  ? "#f59e0b"
-                                  : "#ef4444",
-                            }}
-                          >
-                            {spotsLeft > 0
-                              ? `${spotsLeft} ${
-                                  spotsLeft === 1 ? "spot" : "spots"
-                                } left`
-                              : "Session full"}
-                          </p>
-                        </div>
+                        {ev.type === "training" && (
+                          <>
+                            <div className="flex items-center gap-1">
+                              <UsersIcon className="w-4 h-4" />{" "}
+                              {ev.attendees_count}/{ev.capacity} attending
+                            </div>
+                            <div className="pt-6">
+                              <div className="w-full h-2 bg-gray-200 rounded-full">
+                                <div
+                                  className="h-2 rounded-full"
+                                  style={{
+                                    width: `${
+                                      (ev.attendees_count / ev.capacity) * 100
+                                    }%`,
+                                    backgroundColor:
+                                      ev.attendees_count / ev.capacity < 0.5
+                                        ? "#3b82f6" // blue
+                                        : ev.attendees_count / ev.capacity < 0.8
+                                        ? "#f59e0b" // orange
+                                        : "#ef4444", // red
+                                  }}
+                                />
+                              </div>
+                              <p
+                                className="text-xs"
+                                style={{
+                                  color:
+                                    ev.attendees_count / ev.capacity < 0.5
+                                      ? "#3b82f6"
+                                      : ev.attendees_count / ev.capacity < 0.8
+                                      ? "#f59e0b"
+                                      : "#ef4444",
+                                }}
+                              >
+                                {spotsLeft > 0
+                                  ? `${spotsLeft} ${
+                                      spotsLeft === 1 ? "spot" : "spots"
+                                    } left`
+                                  : "Session full"}
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      <Button
-                        className="w-full"
-                        variant={isGoing ? "secondary" : "primary"}
-                        onClick={() => {
-                          if (isGoing) return;
-                          setSelectedEventId(ev.id);
-                          setShowPositionModal(true);
-                        }}
-                        disabled={full || credits < 1 || isGoing}
-                      >
-                        {isGoing
-                          ? "You're going"
-                          : full
-                          ? "Full"
-                          : credits < 1
-                          ? "Not enough credits"
-                          : "Attend event"}
-                      </Button>
+                      {ev.type === "training" ? (
+                        <div className="flex gap-x-2">
+                          <Button
+                            className="w-full"
+                            variant={isGoing ? "secondary" : "primary"}
+                            onClick={() => {
+                              if (isGoing) return;
+                              setSelectedEventId(ev.id);
+                              setShowPositionModal(true);
+                            }}
+                            disabled={full || credits < 1 || isGoing}
+                          >
+                            {isGoing
+                              ? "You're going"
+                              : full
+                              ? "Full"
+                              : credits < 1
+                              ? "Not enough credits"
+                              : "Attend event"}
+                          </Button>
+                          {isGoing && (
+                            <Button
+                              className="w-full mt-auto"
+                              variant="primary"
+                              onClick={() => handleAddToCalendar(ev)}
+                            >
+                              Add to Calendar{" "}
+                              <CalendarIcon className="w-4 h-4" />{" "}
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <Button
+                          className="w-full mt-auto"
+                          variant="primary"
+                          onClick={() => handleAddToCalendar(ev)}
+                        >
+                          Add to Calendar <CalendarIcon className="w-4 h-4" />{" "}
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );

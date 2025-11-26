@@ -16,6 +16,7 @@ export interface EventItem {
   capacity: number;
   attendees_count: number;
   created_by?: string | null;
+  type: "training" | "game";
 }
 
 export type TransactionType =
