@@ -85,6 +85,14 @@ const Admin = () => {
           >
             +1
           </Button>
+
+          <Button
+            size="sm"
+            variant={p.registered ? "secondary" : "primary"}
+            onClick={() => toggleRegistered(p.id, p.registered)}
+          >
+            {p.registered ? "Unregister" : "Register"}
+          </Button>
         </div>
       </div>
     ));
@@ -135,6 +143,18 @@ const Admin = () => {
     setCapacity(26);
     setType("training");
     await loadEvents();
+  };
+
+  const toggleRegistered = async (id: string, current: boolean) => {
+    const { error } = await supabase.rpc("admin_update_registered", {
+      _user_id: id,
+      _registered: !current,
+    });
+
+    if (error) return toast.error(error.message);
+
+    toast(`User ${!current ? "registered" : "unregistered"}`);
+    await loadProfiles(); // reload the list
   };
 
   const handleDeleteEvent = (id: string) => {
@@ -297,7 +317,7 @@ const Admin = () => {
                 <select
                   name="type"
                   id="type"
-                  className="w-full border rounded-md p-2"
+                  className="flex h-10 w-full rounded-[7px] border border-gray-300 bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-gray-250 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                 >

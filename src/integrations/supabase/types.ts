@@ -253,6 +253,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_update_registered: {
+        Args: { _registered: boolean; _user_id: string }
+        Returns: undefined
+      }
       admin_update_user_credits:
         | {
             Args: { _delta: number; _note?: string; _user_id: string }
