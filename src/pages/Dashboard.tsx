@@ -12,7 +12,7 @@ import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
-import { downloadICS } from "@/helpers/downloadICS";
+import { addToCalendar } from "@/helpers/addToCalendar";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -115,7 +115,7 @@ const Dashboard = () => {
   const credits = useMemo(() => profile?.credits ?? 0, [profile]);
 
   const handleAddToCalendar = (ev: EventItem) => {
-    downloadICS(ev);
+    addToCalendar(ev);
   };
 
   return (
