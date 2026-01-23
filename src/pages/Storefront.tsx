@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "react-toastify";
 import alienBg from "@/assets/images/ufo.jpg";
 import ConfirmationModal from "@/components/ui/modal";
-import { Link1Icon, OpenInNewWindowIcon } from "@radix-ui/react-icons";
-import { Input } from "@/components/ui/input";
+import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
+import { StoreItemForm } from "@/components/forms/StoreItemForm";
+import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 
 type StoreItem = {
   id: string;
@@ -22,6 +23,12 @@ type StoreItem = {
 
 const Storefront = () => {
   const { isAdmin } = useAuth();
+  const {
+    state: confirmModalState,
+    openConfirmation,
+    closeConfirmation,
+  } = useConfirmationModal();
+
   const [items, setItems] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -32,14 +39,6 @@ const Storefront = () => {
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [clickthroughUrl, setClickthroughUrl] = useState("");
-
-  // Confirmation modal state
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [confirmModalTitle, setConfirmModalTitle] = useState("");
-  const [confirmModalMessage, setConfirmModalMessage] = useState("");
-  const [confirmModalAction, setConfirmModalAction] = useState<() => void>(
-    () => {}
-  );
 
   useEffect(() => {
     document.title = "Store | My Platform";
@@ -97,14 +96,15 @@ const Storefront = () => {
   };
 
   const confirmDelete = (item: StoreItem) => {
-    setConfirmModalTitle("Delete Store Item");
-    setConfirmModalMessage(`Are you sure you want to delete "${item.name}"?`);
-    setConfirmModalAction(() => () => deleteItem(item.id));
-    setConfirmModalOpen(true);
+    openConfirmation(
+      "Delete Store Item",
+      `Are you sure you want to delete "${item.name}"?`,
+      () => deleteItem(item.id),
+    );
   };
 
   const deleteItem = async (id: string) => {
-    setConfirmModalOpen(false);
+    closeConfirmation();
     const { error } = await supabase.from("store_items").delete().eq("id", id);
 
     if (error) {
@@ -132,53 +132,20 @@ const Storefront = () => {
 
         {/* Admin create form */}
         {isAdmin && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Create New Item</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Input
-                name="title"
-                id="title"
-                placeholder="Title"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <Input
-                name="imageUrl"
-                id="imageUrl"
-                placeholder="Image URL"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-              />
-              <Input
-                name="description"
-                id="description"
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <Input
-                name="price"
-                id="price"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-              <Input
-                name="url"
-                id="url"
-                placeholder="Link"
-                value={clickthroughUrl}
-                onChange={(e) => setClickthroughUrl(e.target.value)}
-              />
-              <div className="flex flex-col items-end justify-end w-full">
-                <Button onClick={createItem} disabled={creating}>
-                  {creating ? "Creating..." : "Create item"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <StoreItemForm
+            name={name}
+            setName={setName}
+            description={description}
+            setDescription={setDescription}
+            price={price}
+            setPrice={setPrice}
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+            clickthroughUrl={clickthroughUrl}
+            setClickthroughUrl={setClickthroughUrl}
+            onSubmit={createItem}
+            isLoading={creating}
+          />
         )}
 
         {/* Store items grid */}
@@ -259,13 +226,15 @@ const Storefront = () => {
 
         {/* Confirmation modal */}
         <ConfirmationModal
-          open={confirmModalOpen}
-          title={confirmModalTitle}
-          message={confirmModalMessage}
+          open={confirmModalState.open}
+          title={confirmModalState.title}
+          message={confirmModalState.message}
           confirmLabel="Confirm"
           cancelLabel="Cancel"
-          onConfirm={confirmModalAction}
-          onCancel={() => setConfirmModalOpen(false)}
+          onConfirm={async () => {
+            await confirmModalState.action();
+          }}
+          onCancel={closeConfirmation}
         />
       </section>
     </main>

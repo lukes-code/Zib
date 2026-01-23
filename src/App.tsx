@@ -8,8 +8,7 @@ import AuthPage from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import { AuthProvider } from "./hooks/useAuth";
-import ProtectedRoute, { AdminRoute } from "./components/ProtectedRoute";
-import { Nav } from "./components/ui/nav";
+import { ProtectedLayout } from "./components/layouts/ProtectedLayout";
 import Logs from "./pages/Logs";
 import ResetPasswordPage from "./pages/ResetPassword";
 import Storefront from "./pages/Storefront";
@@ -29,37 +28,33 @@ const App = () => (
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
-                <Nav />
+              <ProtectedLayout>
                 <Dashboard />
-              </ProtectedRoute>
+              </ProtectedLayout>
             }
           />
           <Route
             path="/storefront"
             element={
-              <ProtectedRoute>
-                <Nav />
+              <ProtectedLayout>
                 <Storefront />
-              </ProtectedRoute>
+              </ProtectedLayout>
             }
           />
           <Route
             path="/admin"
             element={
-              <AdminRoute>
-                <Nav />
+              <ProtectedLayout requireAdmin>
                 <Admin />
-              </AdminRoute>
+              </ProtectedLayout>
             }
           />
           <Route
             path="/logs"
             element={
-              <AdminRoute>
-                <Nav />
+              <ProtectedLayout requireAdmin>
                 <Logs />
-              </AdminRoute>
+              </ProtectedLayout>
             }
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

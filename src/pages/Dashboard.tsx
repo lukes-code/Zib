@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import type { EventItem } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,16 +12,19 @@ import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
 import { UsersIcon } from "lucide-react";
 import { addToCalendar } from "@/helpers/addToCalendar";
+import { StatsBar } from "@/components/StatsBar";
+import { useEvents } from "@/hooks/useEvents";
+import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const { events, loadFutureEvents } = useEvents();
+
   const [loading, setLoading] = useState(true);
   const [joinedEventIds, setJoinedEventIds] = useState<string[]>([]);
   const [pastEventsCount, setPastEventsCount] = useState(0);
   const [futureEventsCount, setFutureEventsCount] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
-
   const [showPositionModal, setShowPositionModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -31,17 +33,11 @@ const Dashboard = () => {
   }, []);
 
   const loadEvents = async () => {
-    const { data, error } = await supabase
-      .from("events")
-      .select(
-        "id, title, description, event_date, capacity, attendees_count, created_by, type"
-      )
-      .gte("event_date", new Date().toISOString())
-      .order("event_date", { ascending: true });
-
-    if (error) toast.error(error.message);
-    else setEvents((data ?? []) as EventItem[]);
-    setLoading(false);
+    try {
+      await loadFutureEvents();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadJoinedEvents = async () => {
@@ -52,7 +48,6 @@ const Dashboard = () => {
       .eq("user_id", profile.id);
 
     if (error) {
-      // Failed to load joined events
       toast.error(error.message);
     } else {
       setJoinedEventIds((data ?? []).map((d) => d.event_id));
@@ -68,17 +63,22 @@ const Dashboard = () => {
       .eq("user_id", profile.id);
 
     if (error) {
-      // Failed to load event counts
       toast.error(error.message);
       return;
     }
 
     const now = new Date();
-    const past = data?.filter(
-      (e) => new Date(e.events.event_date) < now
+    type EventAttendee = {
+      event_id: string;
+      events: { event_date: string };
+    };
+
+    const attendeeList = (data ?? []) as EventAttendee[];
+    const past = attendeeList.filter(
+      (e) => new Date(e.events.event_date) < now,
     ).length;
-    const future = data?.filter(
-      (e) => new Date(e.events.event_date) >= now
+    const future = attendeeList.filter(
+      (e) => new Date(e.events.event_date) >= now,
     ).length;
 
     setPastEventsCount(past || 0);
@@ -86,14 +86,19 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    loadEvents();
-    loadJoinedEvents();
-    loadEventCounts();
+    if (!profile?.id) return;
+    const runEffect = async () => {
+      await loadEvents();
+      await loadJoinedEvents();
+      await loadEventCounts();
+    };
+    runEffect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
   const joinEventWithPosition = async (
     id: string,
-    position: "defender" | "forward" | "goalie" | "any"
+    position: "defender" | "forward" | "goalie" | "any",
   ) => {
     const { error } = await supabase.rpc("join_event", {
       _event_id: id,
@@ -145,48 +150,14 @@ const Dashboard = () => {
         </header>
 
         {/* Stats bar */}
-        <div className="w-full flex flex-col md:flex-row gap-4 md:bg-white/20 md:rounded-[25px] overflow-hidden">
-          {loading ? (
-            <>
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md"
-                >
-                  <Skeleton className="h-4 w-32 mb-2" />
-                  <Skeleton className="h-6 w-16" />
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Credits
-                </span>
-                <span className="text-2xl font-bold text-left w-full">
-                  {credits}
-                </span>
-              </div>
-              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Attended
-                </span>
-                <span className="text-2xl font-bold text-left w-full">
-                  {pastEventsCount}
-                </span>
-              </div>
-              <div className="bg-white/20 md:bg-transparent rounded-[25px] md:rounded-none flex-1 py-4 px-8 flex flex-col items-center text-white backdrop-blur-md">
-                <span className="text-sm font-medium uppercase tracking-wide text-left w-full">
-                  Attending
-                </span>
-                <span className="text-2xl font-bold text-left w-full">
-                  {futureEventsCount}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
+        <StatsBar
+          isLoading={loading}
+          stats={[
+            { label: "Credits", value: credits },
+            { label: "Attended", value: pastEventsCount },
+            { label: "Attending", value: futureEventsCount },
+          ]}
+        />
 
         <section className="flex items-center gap-x-2">
           <a
@@ -221,10 +192,8 @@ const Dashboard = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <Card key={i}>
-                  <CardHeader>
+                  <CardContent className="space-y-3 p-4">
                     <Skeleton className="h-5 w-3/4" />
-                  </CardHeader>
-                  <CardContent className="space-y-3">
                     <Skeleton className="h-4 w-1/2" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-1/3" />
@@ -281,8 +250,8 @@ const Dashboard = () => {
                                       ev.attendees_count / ev.capacity < 0.5
                                         ? "#3b82f6" // blue
                                         : ev.attendees_count / ev.capacity < 0.8
-                                        ? "#f59e0b" // orange
-                                        : "#ef4444", // red
+                                          ? "#f59e0b" // orange
+                                          : "#ef4444", // red
                                   }}
                                 />
                               </div>
@@ -293,8 +262,8 @@ const Dashboard = () => {
                                     ev.attendees_count / ev.capacity < 0.5
                                       ? "#3b82f6"
                                       : ev.attendees_count / ev.capacity < 0.8
-                                      ? "#f59e0b"
-                                      : "#ef4444",
+                                        ? "#f59e0b"
+                                        : "#ef4444",
                                 }}
                               >
                                 {spotsLeft > 0
@@ -323,10 +292,10 @@ const Dashboard = () => {
                             {isGoing
                               ? "You're going"
                               : full
-                              ? "Full"
-                              : credits < 1
-                              ? "Not enough credits"
-                              : "Attend event"}
+                                ? "Full"
+                                : credits < 1
+                                  ? "Not enough credits"
+                                  : "Attend event"}
                           </Button>
                           {isGoing && (
                             <Button
@@ -345,7 +314,8 @@ const Dashboard = () => {
                           variant="primary"
                           onClick={() => handleAddToCalendar(ev)}
                         >
-                          Add to Calendar <CalendarIcon className="w-4 h-4" />{" "}
+                          Add to Calendar{" "}
+                          <CalendarIcon className="w-4 h-4" />{" "}
                         </Button>
                       )}
                     </CardContent>
