@@ -21,7 +21,11 @@ import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 
 type AttendeeData = {
   user_id: string;
-  profiles: { name: string | null; registered: boolean } | null;
+  profiles: {
+    name: string | null;
+    registered: boolean;
+    subscribed: boolean;
+  } | null;
   position: string | null;
 };
 
@@ -48,7 +52,13 @@ const Admin = () => {
   // UI state
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [attendees, setAttendees] = useState<
-    { user_id: string; name: string; position: string; registered: boolean }[]
+    {
+      user_id: string;
+      name: string;
+      position: string;
+      registered: boolean;
+      subscribed: boolean;
+    }[]
   >([]);
   const [futureOpen, setFutureOpen] = useState(true);
   const [pastOpen, setPastOpen] = useState(false);
@@ -176,7 +186,7 @@ const Admin = () => {
     setSelectedEventId(eventId);
     const { data, error } = await supabase
       .from("event_attendees")
-      .select("user_id, profiles(name, registered), position")
+      .select("user_id, profiles(name, registered, subscribed), position")
       .eq("event_id", eventId);
 
     if (error) return toast.error(error.message);
@@ -186,6 +196,7 @@ const Admin = () => {
       name: d.profiles?.name || "Unknown",
       position: d.position || "Unknown",
       registered: d.profiles?.registered || false,
+      subscribed: d.profiles?.subscribed || false,
     }));
 
     setAttendees(attendeesData);

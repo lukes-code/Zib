@@ -97,6 +97,7 @@ export type Database = {
           id: string
           name: string | null
           registered: boolean
+          subscribed: boolean | null
           updated_at: string
           user_roles: string | null
         }
@@ -107,6 +108,7 @@ export type Database = {
           id: string
           name?: string | null
           registered?: boolean
+          subscribed?: boolean | null
           updated_at?: string
           user_roles?: string | null
         }
@@ -117,6 +119,7 @@ export type Database = {
           id?: string
           name?: string | null
           registered?: boolean
+          subscribed?: boolean | null
           updated_at?: string
           user_roles?: string | null
         }
@@ -290,6 +293,8 @@ export type Database = {
         | "credit_revoke"
         | "join_event"
         | "refund_event"
+        | "registration_toggle"
+        | "subscription_payment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -423,6 +428,8 @@ export const Constants = {
         "credit_revoke",
         "join_event",
         "refund_event",
+        "registration_toggle",
+        "subscription_payment",
       ],
     },
   },

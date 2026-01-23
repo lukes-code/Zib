@@ -6,6 +6,7 @@ export interface Profile {
   created_at: string;
   updated_at: string;
   registered: boolean;
+  subscribed: boolean;
 }
 
 export interface EventItem {

@@ -37,8 +37,13 @@ export const UserList = ({
           className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-gray-50"
         >
           <div>
-            <p className="font-medium">{user.name || user.email}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="font-medium">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user.email}
+            </p>
+            {user.subscribed && (
+              <p className="text-xs text-muted-foreground">Subbed</p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm whitespace-nowrap">

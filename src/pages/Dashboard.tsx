@@ -166,21 +166,12 @@ const Dashboard = () => {
           >
             <Button>Buy 1 credit</Button>
           </a>
-          <div className="relative inline-block">
-            <Button onClick={() => setShowTooltip((prev) => !prev)}>
-              Bulk buy credits and save
-            </Button>
-
-            {showTooltip && (
-              <ConfirmationModal
-                open={showTooltip}
-                hideButtons={true}
-                onCancel={() => setShowTooltip(false)}
-                title="Bulk buy"
-                message="For bulk orders and savings, please contact Jan in the WhatsApp group."
-              />
-            )}
-          </div>
+          <a
+            href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
+            target="_blank"
+          >
+            <Button>Set up subs</Button>
+          </a>
         </section>
 
         <section>

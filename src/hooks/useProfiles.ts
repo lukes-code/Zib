@@ -19,7 +19,9 @@ export const useProfiles = (): UseProfilesReturn => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, name, credits, registered, created_at, updated_at")
+        .select(
+          "id, email, name, credits, registered, created_at, updated_at, subscribed",
+        )
         .order("created_at", { ascending: false });
 
       if (error) {

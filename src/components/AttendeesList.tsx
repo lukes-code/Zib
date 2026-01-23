@@ -6,6 +6,7 @@ type Attendee = {
   name: string;
   position: string;
   registered: boolean;
+  subscribed: boolean;
 };
 
 type AttendeesListProps = {
