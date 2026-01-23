@@ -14,7 +14,6 @@ import { UsersIcon } from "lucide-react";
 import { addToCalendar } from "@/helpers/addToCalendar";
 import { StatsBar } from "@/components/StatsBar";
 import { useEvents } from "@/hooks/useEvents";
-import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -24,7 +23,6 @@ const Dashboard = () => {
   const [joinedEventIds, setJoinedEventIds] = useState<string[]>([]);
   const [pastEventsCount, setPastEventsCount] = useState(0);
   const [futureEventsCount, setFutureEventsCount] = useState(0);
-  const [showTooltip, setShowTooltip] = useState(false);
   const [showPositionModal, setShowPositionModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -140,13 +138,20 @@ const Dashboard = () => {
               {profile?.name || "User"}
             </span>
           </h1>
-          <span
-            className={`${
-              profile?.registered ? "bg-green-500 shadow-sm" : "bg-red-500"
-            } text-white py-1 px-2 rounded-full mt-1 text-sm`}
-          >
-            {profile?.registered ? "Registered" : "Unregistered player"}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span
+              className={`${
+                profile?.registered ? "bg-green-500 shadow-sm" : "bg-red-500"
+              } text-white py-1 px-2 rounded-full mt-1 text-sm`}
+            >
+              {profile?.registered ? "Registered" : "Unregistered player"}
+            </span>
+            {profile?.subscribed && (
+              <span className="bg-green-500 shadow-sm text-white py-1 px-2 rounded-full mt-1 text-sm">
+                Subbed
+              </span>
+            )}
+          </div>
         </header>
 
         {/* Stats bar */}

@@ -74,7 +74,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data, error: profileError } = await supabase
       .from("profiles")
-      .select("id, email, name, credits, created_at, updated_at, registered")
+      .select(
+        "id, email, name, credits, created_at, updated_at, registered, subscribed",
+      )
       .eq("id", userData.user.id)
       .maybeSingle();
 
@@ -167,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       refreshProfile,
       resetPassword,
     }),
-    [user, session, profile, isAdmin, loading]
+    [user, session, profile, isAdmin, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
