@@ -18,6 +18,7 @@ import { AttendeesList } from "@/components/AttendeesList";
 import { useEvents } from "@/hooks/useEvents";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useConfirmationModal } from "@/hooks/useConfirmationModal";
+import { Input } from "@/components/ui/input";
 
 type AttendeeData = {
   user_id: string;
@@ -48,6 +49,7 @@ const Admin = () => {
   const [date, setDate] = useState("");
   const [capacity, setCapacity] = useState(26);
   const [type, setType] = useState("training");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // UI state
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -70,8 +72,20 @@ const Admin = () => {
     setLocalProfiles(profiles);
   }, [profiles]);
 
-  const registeredUsers = localProfiles.filter((p) => p.registered);
-  const unregisteredUsers = localProfiles.filter((p) => !p.registered);
+  const registeredUsers = localProfiles
+    .filter((p) => p.registered)
+    .filter(
+      (p) =>
+        !searchQuery ||
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  const unregisteredUsers = localProfiles
+    .filter((p) => !p.registered)
+    .filter(
+      (p) =>
+        !searchQuery ||
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
   useEffect(() => {
     document.title = "Admin | Pentyrch Aliens";
@@ -267,6 +281,14 @@ const Admin = () => {
           <Card>
             <CardHeader>
               <CardTitle>Users & Credits</CardTitle>
+              <Input
+                name="search"
+                id="search"
+                type="text"
+                placeholder="Search by name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </CardHeader>
             <CardContent
               className={`space-y-3 overflow-y-auto ${

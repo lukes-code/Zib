@@ -47,7 +47,7 @@ export const UserList = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm whitespace-nowrap">
-              {user.credits} credits
+              {user.credits} &#128125;
             </span>
             {onAdjustCredits && (
               <>
