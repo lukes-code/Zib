@@ -243,6 +243,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_all_subscribers_to_event: {
+        Args: { _event_id: string }
+        Returns: undefined
+      }
       admin_remove_attendee: {
         Args: { _event_id: string; _user_id: string }
         Returns: undefined

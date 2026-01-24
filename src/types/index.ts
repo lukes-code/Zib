@@ -17,7 +17,7 @@ export interface EventItem {
   capacity: number;
   attendees_count: number;
   created_by?: string | null;
-  type: "training" | "game";
+  type: "training" | "game" | "training_subbed";
 }
 
 export type TransactionType =

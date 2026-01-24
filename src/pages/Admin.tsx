@@ -49,6 +49,7 @@ const Admin = () => {
   const [date, setDate] = useState("");
   const [capacity, setCapacity] = useState(26);
   const [type, setType] = useState("training");
+  const [addSubscribed, setAddSubscribed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   // UI state
@@ -93,16 +94,62 @@ const Admin = () => {
     loadProfiles();
   }, [loadEvents, loadProfiles]);
 
+  const addSubscribedUsers = async (eventId: string) => {
+    try {
+      // Make sure the user is logged in
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        toast.error("You must be logged in to perform this action");
+        return;
+      }
+
+      // Call the RPC
+      const { error } = await supabase.rpc("add_all_subscribers_to_event", {
+        _event_id: eventId,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to add subscribed users");
+      } else {
+        toast.success("Subscribed users added!");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) toast.error(err.message);
+      else toast.error("Unexpected error");
+    }
+  };
+
   const createEvent = async () => {
     if (!title || !date || (type === "training" && capacity < 1)) return;
-    const { error } = await supabase.from("events").insert({
-      title,
-      description: description || null,
-      event_date: new Date(date).toISOString(),
-      capacity: type === "training" ? capacity : 1,
-      created_by: user?.id ?? null,
-      type,
-    });
+    const capacityValue = type === "game" ? 1 : capacity;
+    const typeValue =
+      type === "training" && addSubscribed ? "training_subbed" : type;
+
+    const { data: event, error } = await supabase
+      .from("events")
+      .insert({
+        title,
+        description: description || null,
+        event_date: new Date(date).toISOString(),
+        capacity: capacityValue,
+        created_by: user?.id ?? null,
+        type: typeValue,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    if (addSubscribed) {
+      await addSubscribedUsers(event.id);
+    }
+
     if (error) return toast.error(error.message);
     toast("Event created");
     setTitle("");
@@ -159,7 +206,7 @@ const Admin = () => {
   const handleDeleteEvent = (id: string) => {
     openConfirmation(
       "Delete Event",
-      "Are you sure you want to delete this event? All attendees will be refunded.",
+      "Are you sure you want to delete this event? All attendees who aren't subbed will be refunded.",
       async () => {
         await deleteEvent(id);
       },
@@ -282,6 +329,8 @@ const Admin = () => {
             capacity={capacity}
             setCapacity={setCapacity}
             onSubmit={createEvent}
+            addSubscribed={addSubscribed}
+            setAddSubscribed={setAddSubscribed}
           />
 
           {/* Users & Credits */}
@@ -299,7 +348,7 @@ const Admin = () => {
             </CardHeader>
             <CardContent
               className={`space-y-3 overflow-y-auto ${
-                type === "training" ? "max-h-[475px]" : "max-h-[400px]"
+                type === "game" ? "max-h-[400px]" : "max-h-[475px]"
               }`}
             >
               <Tabs defaultValue="registered" className="w-full">
@@ -371,6 +420,7 @@ const Admin = () => {
                           onRemove={(userId) =>
                             handleRemoveAttendee(ev.id, userId)
                           }
+                          isSubbedEvent={ev.type === "training_subbed"}
                         />
                       </div>
                     )}
@@ -412,6 +462,7 @@ const Admin = () => {
                           onRemove={(userId) =>
                             handleRemoveAttendee(ev.id, userId)
                           }
+                          isSubbedEvent={ev.type === "training_subbed"}
                         />
                       </div>
                     )}

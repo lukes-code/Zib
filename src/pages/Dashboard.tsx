@@ -165,21 +165,19 @@ const Dashboard = () => {
         />
 
         <section className="flex items-center gap-x-2">
+          <a
+            href={`https://buy.stripe.com/9B65kD2LEc55fD1bpP4wM00?prefilled_email=${profile?.email}`}
+            target="_blank"
+          >
+            <Button>Buy 1 credit</Button>
+          </a>
           {!profile?.subscribed && (
-            <>
-              <a
-                href={`https://buy.stripe.com/9B65kD2LEc55fD1bpP4wM00?prefilled_email=${profile?.email}`}
-                target="_blank"
-              >
-                <Button>Buy 1 credit</Button>
-              </a>
-              <a
-                href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
-                target="_blank"
-              >
-                <Button>Set up monthly subs</Button>
-              </a>
-            </>
+            <a
+              href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
+              target="_blank"
+            >
+              <Button>Set up monthly subs</Button>
+            </a>
           )}
         </section>
 
@@ -217,7 +215,11 @@ const Dashboard = () => {
                       <div>
                         <h3 className="text-lg font-semibold">{ev.title}</h3>
                         <p className="text-sm text-gray-500">
-                          <span className="capitalize">{ev.type}</span>
+                          <span className="capitalize">
+                            {ev.type === "training_subbed"
+                              ? "training"
+                              : ev.type}
+                          </span>
                           {ev.description ? ` - ${ev.description}` : null}
                         </p>
                       </div>
@@ -232,7 +234,8 @@ const Dashboard = () => {
                           {dayjs(ev.event_date).format("h:mm A")}
                         </div>
 
-                        {ev.type === "training" && (
+                        {(ev.type === "training" ||
+                          ev.type === "training_subbed") && (
                           <>
                             <div className="flex items-center gap-1">
                               <UsersIcon className="w-4 h-4" />{" "}
@@ -277,7 +280,16 @@ const Dashboard = () => {
                         )}
                       </div>
 
-                      {ev.type === "training" ? (
+                      {ev.type === "game" ? (
+                        <Button
+                          className="w-full mt-auto"
+                          variant="primary"
+                          onClick={() => handleAddToCalendar(ev)}
+                        >
+                          Add to Calendar{" "}
+                          <CalendarIcon className="w-4 h-4" />{" "}
+                        </Button>
+                      ) : (
                         <div className="flex gap-x-2">
                           <Button
                             className="w-full"
@@ -308,15 +320,6 @@ const Dashboard = () => {
                             </Button>
                           )}
                         </div>
-                      ) : (
-                        <Button
-                          className="w-full mt-auto"
-                          variant="primary"
-                          onClick={() => handleAddToCalendar(ev)}
-                        >
-                          Add to Calendar{" "}
-                          <CalendarIcon className="w-4 h-4" />{" "}
-                        </Button>
                       )}
                     </CardContent>
                   </Card>

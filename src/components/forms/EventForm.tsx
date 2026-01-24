@@ -15,6 +15,8 @@ type EventFormProps = {
   setCapacity?: (capacity: number) => void;
   onSubmit: () => void;
   isLoading?: boolean;
+  addSubscribed: boolean;
+  setAddSubscribed: (v: boolean) => void;
 };
 
 type FormFieldProps = {
@@ -44,6 +46,8 @@ export const EventForm = ({
   setCapacity,
   onSubmit,
   isLoading = false,
+  addSubscribed,
+  setAddSubscribed,
 }: EventFormProps) => {
   return (
     <Card>
@@ -88,14 +92,27 @@ export const EventForm = ({
         />
 
         {type === "training" && capacity !== undefined && setCapacity && (
-          <FormField
-            label="Capacity"
-            htmlFor="capacity"
-            type="number"
-            min="0"
-            value={capacity.toString()}
-            onChange={(e) => setCapacity(parseInt(e.target.value || "0"))}
-          />
+          <>
+            <FormField
+              label="Capacity"
+              htmlFor="capacity"
+              type="number"
+              min="0"
+              value={capacity.toString()}
+              onChange={(e) => setCapacity(parseInt(e.target.value || "0"))}
+            />
+            <div className="flex items-center gap-2">
+              <input
+                id="addSubscribed"
+                type="checkbox"
+                checked={addSubscribed}
+                onChange={(e) => setAddSubscribed(e.target.checked)}
+              />
+              <label htmlFor="addSubscribed" className="text-sm font-medium">
+                Add all subscribed users
+              </label>
+            </div>
+          </>
         )}
 
         <div className="flex justify-end">

@@ -20,9 +20,7 @@ export const EventCard = ({
   isOpen = false,
 }: EventCardProps) => {
   const attendancePercentage =
-    event.type === "training"
-      ? (event.attendees_count / event.capacity) * 100
-      : 0;
+    event.type === "game" ? 0 : (event.attendees_count / event.capacity) * 100;
 
   const getCapacityColor = (percentage: number) => {
     if (percentage < 50) return "#3b82f6"; // blue
@@ -42,7 +40,11 @@ export const EventCard = ({
         </p>
 
         {/* Type */}
-        {event.type && <p className="text-sm capitalize">{event.type}</p>}
+        {event.type && (
+          <p className="text-sm capitalize">
+            {event.type === "training_subbed" ? "training" : event.type}
+          </p>
+        )}
 
         {/* Description */}
         {event.description && (
@@ -50,7 +52,7 @@ export const EventCard = ({
         )}
 
         {/* Capacity bar for training events */}
-        {event.type === "training" && (
+        {(event.type === "training" || event.type === "training_subbed") && (
           <div className="space-y-1 pt-2">
             <p className="text-sm">
               {event.attendees_count}/{event.capacity} spots

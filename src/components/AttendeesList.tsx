@@ -13,12 +13,14 @@ type AttendeesListProps = {
   attendees: Attendee[];
   isLoading?: boolean;
   onRemove?: (userId: string) => void;
+  isSubbedEvent?: boolean;
 };
 
 export const AttendeesList = ({
   attendees,
   isLoading = false,
   onRemove,
+  isSubbedEvent = false,
 }: AttendeesListProps) => {
   if (isLoading) {
     return (
@@ -70,7 +72,9 @@ export const AttendeesList = ({
                 onClick={() => onRemove(attendee.user_id)}
                 className="flex-shrink-0"
               >
-                Remove & refund
+                {attendee.subscribed && isSubbedEvent
+                  ? "Remove"
+                  : "Remove & Refund"}
               </Button>
             )}
           </div>
