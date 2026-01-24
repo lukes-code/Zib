@@ -14,6 +14,7 @@ import { UsersIcon } from "lucide-react";
 import { addToCalendar } from "@/helpers/addToCalendar";
 import { StatsBar } from "@/components/StatsBar";
 import { useEvents } from "@/hooks/useEvents";
+import { Footer } from "@/components/Footer";
 
 const Dashboard = () => {
   const { profile, refreshProfile } = useAuth();
@@ -350,6 +351,7 @@ const Dashboard = () => {
           setSelectedEventId(null);
         }}
       />
+      <Footer />
     </main>
   );
 };

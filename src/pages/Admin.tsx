@@ -19,6 +19,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useConfirmationModal } from "@/hooks/useConfirmationModal";
 import { Input } from "@/components/ui/input";
+import { Footer } from "@/components/Footer";
 
 type AttendeeData = {
   user_id: string;
@@ -485,6 +486,7 @@ const Admin = () => {
         }}
         onCancel={closeConfirmation}
       />
+      <Footer />
     </main>
   );
 };

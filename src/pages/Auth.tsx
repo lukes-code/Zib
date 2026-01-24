@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,11 +35,11 @@ const AuthPage = () => {
 
   const canLogin = useMemo(
     () => loginEmail && loginPassword,
-    [loginEmail, loginPassword]
+    [loginEmail, loginPassword],
   );
   const canRegister = useMemo(
     () => name && email && password,
-    [name, email, password]
+    [name, email, password],
   );
   const canReset = useMemo(() => resetEmail, [resetEmail]);
 
@@ -73,7 +73,7 @@ const AuthPage = () => {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+    <main className="min-h-screen flex flex-col gap-y-5 items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <section className="w-full max-w-6xl">
         <div className="flex flex-col md:flex-row bg-white shadow-xl rounded-2xl overflow-hidden">
           {/* Left: Illustration */}
@@ -141,6 +141,7 @@ const AuthPage = () => {
                       >
                         {loading ? "Please wait…" : "Login"}
                       </Button>
+
                       <Button
                         variant="link"
                         className="text-sm text-blue-500 hover:underline"
@@ -229,6 +230,19 @@ const AuthPage = () => {
           </div>
         </div>
       </section>
+      <p className="text-xs text-gray-500 text-center">
+        By using this site, you agree to our{" "}
+        <Link
+          to="/terms-and-conditions"
+          className="text-blue-500 hover:underline"
+        >
+          Terms & Conditions
+        </Link>{" "}
+        and{" "}
+        <Link to="/privacy-policy" className="text-blue-500 hover:underline">
+          Privacy Policy
+        </Link>
+      </p>
     </main>
   );
 };

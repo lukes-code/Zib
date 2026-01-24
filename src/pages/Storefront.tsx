@@ -11,6 +11,7 @@ import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import { StoreItemForm } from "@/components/forms/StoreItemForm";
 import { useConfirmationModal } from "@/hooks/useConfirmationModal";
+import { Footer } from "@/components/Footer";
 
 type StoreItem = {
   id: string;
@@ -237,6 +238,7 @@ const Storefront = () => {
           onCancel={closeConfirmation}
         />
       </section>
+      <Footer />
     </main>
   );
 };

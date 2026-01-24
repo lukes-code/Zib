@@ -12,6 +12,8 @@ import { ProtectedLayout } from "./components/layouts/ProtectedLayout";
 import Logs from "./pages/Logs";
 import ResetPasswordPage from "./pages/ResetPassword";
 import Storefront from "./pages/Storefront";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,11 @@ const App = () => (
                 <Logs />
               </ProtectedLayout>
             }
+          />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route
+            path="/terms-and-conditions"
+            element={<TermsAndConditions />}
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
