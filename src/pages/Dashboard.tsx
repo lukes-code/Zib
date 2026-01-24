@@ -165,18 +165,22 @@ const Dashboard = () => {
         />
 
         <section className="flex items-center gap-x-2">
-          <a
-            href={`https://buy.stripe.com/9B65kD2LEc55fD1bpP4wM00?prefilled_email=${profile?.email}`}
-            target="_blank"
-          >
-            <Button>Buy 1 credit</Button>
-          </a>
-          <a
-            href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
-            target="_blank"
-          >
-            <Button>Set up subs</Button>
-          </a>
+          {!profile?.subscribed && (
+            <>
+              <a
+                href={`https://buy.stripe.com/9B65kD2LEc55fD1bpP4wM00?prefilled_email=${profile?.email}`}
+                target="_blank"
+              >
+                <Button>Buy 1 credit</Button>
+              </a>
+              <a
+                href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
+                target="_blank"
+              >
+                <Button>Set up monthly subs</Button>
+              </a>
+            </>
+          )}
         </section>
 
         <section>
