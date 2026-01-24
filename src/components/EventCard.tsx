@@ -9,6 +9,7 @@ type EventCardProps = {
   children?: ReactNode;
   onDelete?: (eventId: string) => void;
   onViewAttendees?: (eventId: string) => void;
+  isOpen?: boolean;
 };
 
 export const EventCard = ({
@@ -16,6 +17,7 @@ export const EventCard = ({
   children,
   onDelete,
   onViewAttendees,
+  isOpen = false,
 }: EventCardProps) => {
   const attendancePercentage =
     event.type === "training"
@@ -67,14 +69,14 @@ export const EventCard = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 pt-2">
-          {onViewAttendees && (
+          {onViewAttendees && event.type !== "game" && (
             <Button
               variant="secondary"
               size="sm"
               onClick={() => onViewAttendees(event.id)}
               className="flex-1"
             >
-              View attendees
+              {isOpen ? "Hide attendees" : "View attendees"}
             </Button>
           )}
           {onDelete && (

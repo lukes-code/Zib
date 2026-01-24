@@ -197,6 +197,13 @@ const Admin = () => {
   };
 
   const viewAttendees = async (eventId: string) => {
+    if (selectedEventId === eventId) {
+      // Toggle off if already selected
+      setSelectedEventId(null);
+      setAttendees([]);
+      return;
+    }
+
     setSelectedEventId(eventId);
     const { data, error } = await supabase
       .from("event_attendees")
@@ -355,6 +362,7 @@ const Admin = () => {
                     event={ev}
                     onDelete={handleDeleteEvent}
                     onViewAttendees={viewAttendees}
+                    isOpen={selectedEventId !== null}
                   >
                     {selectedEventId === ev.id && (
                       <div className="pt-4">
@@ -395,6 +403,7 @@ const Admin = () => {
                     event={ev}
                     onDelete={handleDeleteEvent}
                     onViewAttendees={viewAttendees}
+                    isOpen={selectedEventId !== null}
                   >
                     {selectedEventId === ev.id && (
                       <div className="pt-4">
