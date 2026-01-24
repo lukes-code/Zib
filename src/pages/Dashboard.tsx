@@ -197,6 +197,11 @@ const Dashboard = () => {
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-1/3" />
                     <Skeleton className="h-10 w-full rounded-md" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-10 w-full rounded-md" />
                   </CardContent>
                 </Card>
               ))}

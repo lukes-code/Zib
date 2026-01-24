@@ -118,126 +118,128 @@ const Storefront = () => {
   };
 
   return (
-    <main className="relative bg-gray-50 flex-1 bg-background overflow-auto sm:ml-[96px] transition-all duration-300">
-      <div
-        className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center"
-        style={{ backgroundImage: `url(${alienBg})` }}
-      />
-
-      <section className="relative z-10 container mx-auto px-6 pt-12 space-y-6">
-        <header>
-          <h1 className="text-3xl font-bold text-white drop-shadow">Store</h1>
-        </header>
-
-        <Separator />
-
-        {/* Admin create form */}
-        {isAdmin && (
-          <StoreItemForm
-            name={name}
-            setName={setName}
-            description={description}
-            setDescription={setDescription}
-            price={price}
-            setPrice={setPrice}
-            imageUrl={imageUrl}
-            setImageUrl={setImageUrl}
-            clickthroughUrl={clickthroughUrl}
-            setClickthroughUrl={setClickthroughUrl}
-            onSubmit={createItem}
-            isLoading={creating}
-          />
-        )}
-
-        {/* Store items grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {loading ? (
-            [...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-60 w-full rounded-md" />
-            ))
-          ) : items.length === 0 ? (
-            <p>No items.</p>
-          ) : (
-            items.map((item) => (
-              <Card
-                key={item.id}
-                className="overflow-hidden relative rounded-[25px] bg-white"
-              >
-                {/* Image */}
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="h-48 w-full object-cover"
-                  />
-                ) : (
-                  <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-gray-400">
-                    No Image
-                  </div>
-                )}
-
-                {/* Content */}
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-6">
-                    <p className="font-medium text-gray-800">£{item.price}</p>
-                    <div className="flex space-x-2 justify-end">
-                      {/* Admin actions */}
-                      {isAdmin && (
-                        <Button
-                          onClick={() => confirmDelete(item)}
-                          variant="danger"
-                        >
-                          Delete
-                        </Button>
-                      )}
-                      {item.clickthrough_url && (
-                        <a
-                          href={item.clickthrough_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-gray-900 transition-colors"
-                        >
-                          <Button
-                            variant="primary"
-                            className="flex space-x-2 items-center justify-centerx"
-                          >
-                            Visit
-                            <OpenInNewWindowIcon />
-                          </Button>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </section>
-
-        {/* Confirmation modal */}
-        <ConfirmationModal
-          open={confirmModalState.open}
-          title={confirmModalState.title}
-          message={confirmModalState.message}
-          confirmLabel="Confirm"
-          cancelLabel="Cancel"
-          onConfirm={async () => {
-            await confirmModalState.action();
-          }}
-          onCancel={closeConfirmation}
+    <main className="flex flex-col w-full min-h-screen bg-gray-50 bg-background sm:ml-[96px] transition-all duration-300">
+      <div className="relative flex-1 overflow-auto">
+        <div
+          className="absolute top-0 left-0 w-full h-[400px] bg-cover bg-center"
+          style={{ backgroundImage: `url(${alienBg})` }}
         />
-      </section>
+
+        <section className="relative z-10 container mx-auto px-6 pt-12 space-y-6">
+          <header>
+            <h1 className="text-3xl font-bold text-white drop-shadow">Store</h1>
+          </header>
+
+          <Separator />
+
+          {/* Admin create form */}
+          {isAdmin && (
+            <StoreItemForm
+              name={name}
+              setName={setName}
+              description={description}
+              setDescription={setDescription}
+              price={price}
+              setPrice={setPrice}
+              imageUrl={imageUrl}
+              setImageUrl={setImageUrl}
+              clickthroughUrl={clickthroughUrl}
+              setClickthroughUrl={setClickthroughUrl}
+              onSubmit={createItem}
+              isLoading={creating}
+            />
+          )}
+
+          {/* Store items grid */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {loading ? (
+              [...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-60 w-full rounded-md" />
+              ))
+            ) : items.length === 0 ? (
+              <p>No items.</p>
+            ) : (
+              items.map((item) => (
+                <Card
+                  key={item.id}
+                  className="overflow-hidden relative rounded-[25px] bg-white"
+                >
+                  {/* Image */}
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="h-48 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-48 w-full bg-gray-100 flex items-center justify-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-6">
+                      <p className="font-medium text-gray-800">£{item.price}</p>
+                      <div className="flex space-x-2 justify-end">
+                        {/* Admin actions */}
+                        {isAdmin && (
+                          <Button
+                            onClick={() => confirmDelete(item)}
+                            variant="danger"
+                          >
+                            Delete
+                          </Button>
+                        )}
+                        {item.clickthrough_url && (
+                          <a
+                            href={item.clickthrough_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-gray-900 transition-colors"
+                          >
+                            <Button
+                              variant="primary"
+                              className="flex space-x-2 items-center justify-centerx"
+                            >
+                              Visit
+                              <OpenInNewWindowIcon />
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </section>
+
+          {/* Confirmation modal */}
+          <ConfirmationModal
+            open={confirmModalState.open}
+            title={confirmModalState.title}
+            message={confirmModalState.message}
+            confirmLabel="Confirm"
+            cancelLabel="Cancel"
+            onConfirm={async () => {
+              await confirmModalState.action();
+            }}
+            onCancel={closeConfirmation}
+          />
+        </section>
+      </div>
       <Footer />
     </main>
   );
