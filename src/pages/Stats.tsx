@@ -42,6 +42,9 @@ const Stats: React.FC = () => {
     free: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [attendancePeriod, setAttendancePeriod] = useState<
+    "1m" | "3m" | "1y" | "all"
+  >("all");
 
   useEffect(() => {
     if (!isAdmin) {
@@ -68,43 +71,19 @@ const Stats: React.FC = () => {
       const free = typedProfiles.length - subscribed;
       setSubscriptionData({ subscribed, free });
 
-      // Load event attendance data
+      // Load event attendance data with event dates
       const { data: attendanceData, error: attendanceError } = await supabase
         .from("event_attendees")
         .select(
-          "user_id, events(title), profiles!event_attendees_user_id_fkey(name)",
+          "user_id, events(title, event_date), profiles!event_attendees_user_id_fkey(name)",
         )
         .order("user_id");
 
       if (attendanceError) throw attendanceError;
 
-      // Group by user and count events
-      const attendanceMap = new Map<
-        string,
-        { name: string | null; count: number }
-      >();
+      // Store raw attendance data for filtering
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (attendanceData || []).forEach((item: any) => {
-        if (!attendanceMap.has(item.user_id)) {
-          attendanceMap.set(item.user_id, {
-            name: item.profiles?.name || "Unknown",
-            count: 0,
-          });
-        }
-        const current = attendanceMap.get(item.user_id)!;
-        current.count += 1;
-      });
-
-      const attendanceList = Array.from(attendanceMap.entries())
-        .map(([user_id, data]) => ({
-          user_id,
-          name: data.name,
-          event_count: data.count,
-        }))
-        .sort((a, b) => b.event_count - a.event_count)
-        .slice(0, 10);
-
-      setEventAttendance(attendanceList);
+      (window as any).__rawAttendanceData = attendanceData;
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       toast.error("Failed to load dashboard data");
@@ -112,6 +91,60 @@ const Stats: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Filter attendance data based on selected period
+  const filteredEventAttendance = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const attendanceData = (window as any).__rawAttendanceData || [];
+    const now = new Date();
+    const cutoffDate = new Date();
+
+    // Calculate cutoff date based on period
+    if (attendancePeriod === "1m") {
+      cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+    } else if (attendancePeriod === "3m") {
+      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+    } else if (attendancePeriod === "1y") {
+      cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+    }
+    // "all" means no cutoff
+
+    // Group by user and count events within the period
+    const attendanceMap = new Map<
+      string,
+      { name: string | null; count: number }
+    >();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (attendanceData || []).forEach((item: any) => {
+      const eventDate = item.events?.event_date
+        ? new Date(item.events.event_date)
+        : null;
+
+      // Filter by date if not "all time"
+      if (attendancePeriod !== "all" && eventDate && eventDate < cutoffDate) {
+        return;
+      }
+
+      if (!attendanceMap.has(item.user_id)) {
+        attendanceMap.set(item.user_id, {
+          name: item.profiles?.name || "Unknown",
+          count: 0,
+        });
+      }
+      const current = attendanceMap.get(item.user_id)!;
+      current.count += 1;
+    });
+
+    return Array.from(attendanceMap.entries())
+      .map(([user_id, data]) => ({
+        user_id,
+        name: data.name,
+        event_count: data.count,
+      }))
+      .sort((a, b) => b.event_count - a.event_count)
+      .slice(0, 10);
+  }, [attendancePeriod]);
 
   // Calculate stats
   const topCoinsLeaderboard = useMemo(() => {
@@ -136,7 +169,7 @@ const Stats: React.FC = () => {
   // Chart data
   const subscriptionChartOptions: ApexOptions = {
     chart: { type: "donut" },
-    labels: ["Subscribed", "Free"],
+    labels: ["Subbed", "Not subbed"],
     colors: ["#10b981", "#ef4444"],
     plotOptions: {
       pie: {
@@ -184,12 +217,25 @@ const Stats: React.FC = () => {
     },
   ];
 
+  const attendanceColors = [
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#f59e0b",
+    "#10b981",
+    "#06b6d4",
+    "#ef4444",
+    "#f97316",
+    "#6366f1",
+    "#14b8a6",
+  ];
+
   const attendanceChartOptions: ApexOptions = {
     chart: { type: "bar" },
-    colors: ["#3b82f6"],
+    colors: attendanceColors,
     dataLabels: { enabled: false },
     xaxis: {
-      categories: eventAttendance.map((e) => e.name || "Unknown"),
+      categories: filteredEventAttendance.map((e) => e.name || "Unknown"),
       labels: { style: { colors: "#666", fontSize: "11px" } },
     },
     yaxis: { labels: { style: { colors: "#666" } } },
@@ -200,7 +246,7 @@ const Stats: React.FC = () => {
   const attendanceChartSeries = [
     {
       name: "Events Attended",
-      data: eventAttendance.map((e) => e.event_count),
+      data: filteredEventAttendance.map((e) => e.event_count),
     },
   ];
 
@@ -319,10 +365,36 @@ const Stats: React.FC = () => {
 
         {/* Event Attendance Chart */}
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-900">
-            <Calendar className="w-5 h-5 text-cyan-600" />
-            Most Active Attendees
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+              <Calendar className="w-5 h-5 text-cyan-600" />
+              Most Active Attendees
+            </h2>
+            <div className="flex gap-2">
+              {[
+                { label: "Last Month", value: "1m" },
+                { label: "Last 3 Months", value: "3m" },
+                { label: "Last Year", value: "1y" },
+                { label: "All Time", value: "all" },
+              ].map((period) => (
+                <button
+                  key={period.value}
+                  onClick={() =>
+                    setAttendancePeriod(
+                      period.value as "1m" | "3m" | "1y" | "all",
+                    )
+                  }
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    attendancePeriod === period.value
+                      ? "bg-cyan-600 text-white shadow-md"
+                      : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  {period.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <Chart
             options={attendanceChartOptions}
             series={attendanceChartSeries}
@@ -368,7 +440,7 @@ const Stats: React.FC = () => {
               Top Attendees
             </h3>
             <div className="space-y-3">
-              {eventAttendance.slice(0, 10).map((user, idx) => (
+              {filteredEventAttendance.slice(0, 10).map((user, idx) => (
                 <div
                   key={user.user_id}
                   className="flex items-center justify-between p-3 rounded-lg bg-white hover:bg-gray-50 transition-colors border border-gray-200"
