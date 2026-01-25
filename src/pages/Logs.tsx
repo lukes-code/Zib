@@ -214,7 +214,9 @@ const Logs: React.FC = () => {
     <main className="flex-1 bg-background overflow-auto sm:ml-[96px]">
       <section className="container mx-auto px-6 pt-12 pb-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Event Log</h1>
+          <h1 className="text-5xl font-black mb-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Event Log
+          </h1>
           <p className="text-muted-foreground">
             View all transaction history and activities
           </p>

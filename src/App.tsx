@@ -14,6 +14,8 @@ import ResetPasswordPage from "./pages/ResetPassword";
 import Storefront from "./pages/Storefront";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import AdminDashboard from "./pages/Stats";
+import Stats from "./pages/Stats";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,14 @@ const App = () => (
             element={
               <ProtectedLayout requireAdmin>
                 <Logs />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <ProtectedLayout requireAdmin>
+                <Stats />
               </ProtectedLayout>
             }
           />

@@ -9,7 +9,7 @@ import {
   FileTextIcon,
 } from "@radix-ui/react-icons";
 import ConfirmationModal from "./modal";
-import { StoreIcon } from "lucide-react";
+import { StoreIcon, BarChart3 } from "lucide-react";
 import logo from "@/assets/images/logo.png";
 
 export const Nav = () => {
@@ -104,6 +104,19 @@ export const Nav = () => {
                   }
                 >
                   <FileTextIcon width={24} height={24} />
+                </NavLink>
+                <NavLink
+                  to="/stats"
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `p-2 rounded-[999px] transition-colors ${
+                      isActive
+                        ? "text-black bg-white"
+                        : "text-white hover:bg-white hover:text-black"
+                    }`
+                  }
+                >
+                  <BarChart3 width={24} height={24} />
                 </NavLink>
               </>
             )}

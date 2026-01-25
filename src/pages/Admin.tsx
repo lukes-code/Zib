@@ -306,7 +306,7 @@ const Admin = () => {
 
       <section className="relative z-10 container mx-auto px-6 py-12 space-y-8">
         <header>
-          <h1 className="text-3xl font-bold text-white drop-shadow">
+          <h1 className="text-5xl font-black mb-3 bg-gradient-to-r text-white bg-clip-text text-transparent">
             Admin Dashboard
           </h1>
           <p className="text-white text-opacity-90 drop-shadow">
