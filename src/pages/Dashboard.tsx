@@ -10,10 +10,11 @@ import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ui/modal";
 import { toast } from "react-toastify";
 import { CalendarIcon, ClockIcon } from "@radix-ui/react-icons";
-import { UsersIcon } from "lucide-react";
+import { UsersIcon, ChevronDown } from "lucide-react";
 import { addToCalendar } from "@/helpers/addToCalendar";
 import { StatsBar } from "@/components/StatsBar";
 import { useEvents } from "@/hooks/useEvents";
+import useAboveBreakpoint from "@/hooks/useAboveBreakpoint";
 import { Footer } from "@/components/Footer";
 
 const Dashboard = () => {
@@ -26,6 +27,8 @@ const Dashboard = () => {
   const [futureEventsCount, setFutureEventsCount] = useState(0);
   const [showPositionModal, setShowPositionModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [expandYourEvents, setExpandYourEvents] = useState(true);
+  const aboveMobile = useAboveBreakpoint("md");
 
   useEffect(() => {
     document.title = "Dashboard | Pentyrch Aliens";
@@ -182,140 +185,307 @@ const Dashboard = () => {
           )}
         </section>
 
-        <section>
-          <h2 className="text-xl font-medium mb-4 text-black md:text-white drop-shadow">
-            Upcoming events
-          </h2>
+        {events.filter((e) => joinedEventIds.includes(e.id)).length > 0 && (
+          <section className={`${!expandYourEvents && aboveMobile && "pb-16"}`}>
+            <button
+              onClick={() => setExpandYourEvents(!expandYourEvents)}
+              className="flex items-center gap-2 w-full text-xl font-medium mb-4 text-black md:text-white drop-shadow hover:opacity-80 transition-opacity"
+            >
+              <ChevronDown
+                className={`w-5 h-5 transition-transform ${
+                  expandYourEvents ? "rotate-0" : "-rotate-90"
+                }`}
+              />
+              Your upcoming events
+            </button>
 
-          {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="space-y-3 p-4">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-10 w-full rounded-md" />
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-10 w-full rounded-md" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : events.length === 0 ? (
-            <p className="text-black md:text-white">No upcoming events.</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((ev) => {
-                const isGoing = joinedEventIds.includes(ev.id);
-                const full = ev.attendees_count >= ev.capacity;
-                const spotsLeft = ev.capacity - ev.attendees_count;
+            {expandYourEvents && (
+              <>
+                {loading ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i}>
+                        <CardContent className="space-y-3 p-4">
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-1/3" />
+                          <Skeleton className="h-10 w-full rounded-md" />
+                          <Skeleton className="h-5 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-1/3" />
+                          <Skeleton className="h-10 w-full rounded-md" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+                    {events
+                      .filter((e) => joinedEventIds.includes(e.id))
+                      .map((ev) => {
+                        const isGoing = joinedEventIds.includes(ev.id);
+                        const full = ev.attendees_count >= ev.capacity;
+                        const spotsLeft = ev.capacity - ev.attendees_count;
 
-                return (
-                  <Card key={ev.id} className="relative overflow-hidden">
-                    <CardContent className="space-y-3 p-4 flex flex-col h-full">
-                      <div>
-                        <h3 className="text-lg font-semibold">{ev.title}</h3>
-                        <p className="text-sm text-gray-500">
-                          <span className="capitalize">
-                            {ev.type === "training_subbed"
-                              ? "training"
-                              : ev.type}
-                          </span>
-                          {ev.description ? ` - ${ev.description}` : null}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1 text-sm text-gray-600 flex-1">
-                        <div className="flex items-center gap-1">
-                          <CalendarIcon className="w-4 h-4" />{" "}
-                          {dayjs(ev.event_date).format("ddd, MMM D")}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ClockIcon className="w-4 h-4" />{" "}
-                          {dayjs(ev.event_date).format("h:mm A")}
-                        </div>
-
-                        {(ev.type === "training" ||
-                          ev.type === "training_subbed") && (
-                          <>
-                            <div className="flex items-center gap-1">
-                              <UsersIcon className="w-4 h-4" />{" "}
-                              {ev.attendees_count}/{ev.capacity} attending
-                            </div>
-                            <div className="pt-6">
-                              <div className="w-full h-2 bg-gray-200 rounded-full">
-                                <div
-                                  className="h-2 rounded-full"
-                                  style={{
-                                    width: `${
-                                      (ev.attendees_count / ev.capacity) * 100
-                                    }%`,
-                                    backgroundColor:
-                                      ev.attendees_count / ev.capacity < 0.5
-                                        ? "#3b82f6" // blue
-                                        : ev.attendees_count / ev.capacity < 0.8
-                                          ? "#f59e0b" // orange
-                                          : "#ef4444", // red
-                                  }}
-                                />
-                              </div>
-                              <p
-                                className="text-xs"
-                                style={{
-                                  color:
-                                    ev.attendees_count / ev.capacity < 0.5
-                                      ? "#3b82f6"
-                                      : ev.attendees_count / ev.capacity < 0.8
-                                        ? "#f59e0b"
-                                        : "#ef4444",
-                                }}
-                              >
-                                {spotsLeft > 0
-                                  ? `${spotsLeft} ${
-                                      spotsLeft === 1 ? "spot" : "spots"
-                                    } left`
-                                  : "Session full"}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {ev.type === "game" ? (
-                        <Button
-                          className="w-full mt-auto"
-                          variant="primary"
-                          onClick={() => handleAddToCalendar(ev)}
-                        >
-                          Add to Calendar{" "}
-                          <CalendarIcon className="w-4 h-4" />{" "}
-                        </Button>
-                      ) : (
-                        <div className="flex gap-x-2">
-                          <Button
-                            className="w-full"
-                            variant={isGoing ? "secondary" : "primary"}
-                            onClick={() => {
-                              if (isGoing) return;
-                              setSelectedEventId(ev.id);
-                              setShowPositionModal(true);
-                            }}
-                            disabled={full || credits < 1 || isGoing}
+                        return (
+                          <Card
+                            key={ev.id}
+                            className="relative overflow-hidden"
                           >
-                            {isGoing
-                              ? "You're going"
-                              : full
-                                ? "Full"
-                                : credits < 1
-                                  ? "Not enough credits"
-                                  : "Attend event"}
-                          </Button>
-                          {isGoing && (
+                            <CardContent className="space-y-3 p-4 flex flex-col h-full">
+                              <div>
+                                <h3 className="text-lg font-semibold">
+                                  {ev.title}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  <span className="capitalize">
+                                    {ev.type === "training_subbed"
+                                      ? "training"
+                                      : ev.type}
+                                  </span>
+                                  {ev.description
+                                    ? ` - ${ev.description}`
+                                    : null}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1 text-sm text-gray-600 flex-1">
+                                <div className="flex items-center gap-1">
+                                  <CalendarIcon className="w-4 h-4" />{" "}
+                                  {dayjs(ev.event_date).format("ddd, MMM D")}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <ClockIcon className="w-4 h-4" />{" "}
+                                  {dayjs(ev.event_date).format("h:mm A")}
+                                </div>
+
+                                {(ev.type === "training" ||
+                                  ev.type === "training_subbed") && (
+                                  <>
+                                    <div className="flex items-center gap-1">
+                                      <UsersIcon className="w-4 h-4" />{" "}
+                                      {ev.attendees_count}/{ev.capacity}{" "}
+                                      attending
+                                    </div>
+                                    <div className="pt-6">
+                                      <div className="w-full h-2 bg-gray-200 rounded-full">
+                                        <div
+                                          className="h-2 rounded-full"
+                                          style={{
+                                            width: `${
+                                              (ev.attendees_count /
+                                                ev.capacity) *
+                                              100
+                                            }%`,
+                                            backgroundColor:
+                                              ev.attendees_count / ev.capacity <
+                                              0.5
+                                                ? "#3b82f6" // blue
+                                                : ev.attendees_count /
+                                                      ev.capacity <
+                                                    0.8
+                                                  ? "#f59e0b" // orange
+                                                  : "#ef4444", // red
+                                          }}
+                                        />
+                                      </div>
+                                      <p
+                                        className="text-xs"
+                                        style={{
+                                          color:
+                                            ev.attendees_count / ev.capacity <
+                                            0.5
+                                              ? "#3b82f6"
+                                              : ev.attendees_count /
+                                                    ev.capacity <
+                                                  0.8
+                                                ? "#f59e0b"
+                                                : "#ef4444",
+                                        }}
+                                      >
+                                        {spotsLeft > 0
+                                          ? `${spotsLeft} ${
+                                              spotsLeft === 1 ? "spot" : "spots"
+                                            } left`
+                                          : "Session full"}
+                                      </p>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+
+                              {ev.type === "game" ? (
+                                <Button
+                                  className="w-full mt-auto"
+                                  variant="primary"
+                                  onClick={() => handleAddToCalendar(ev)}
+                                >
+                                  Add to Calendar{" "}
+                                  <CalendarIcon className="w-4 h-4" />{" "}
+                                </Button>
+                              ) : (
+                                <div className="flex gap-x-2">
+                                  <Button
+                                    className="w-full"
+                                    variant={isGoing ? "secondary" : "primary"}
+                                    onClick={() => {
+                                      if (isGoing) return;
+                                      setSelectedEventId(ev.id);
+                                      setShowPositionModal(true);
+                                    }}
+                                    disabled={full || credits < 1 || isGoing}
+                                  >
+                                    {isGoing
+                                      ? "You're going"
+                                      : full
+                                        ? "Full"
+                                        : credits < 1
+                                          ? "Not enough credits"
+                                          : "Attend event"}
+                                  </Button>
+                                  {isGoing && (
+                                    <Button
+                                      className="w-full mt-auto"
+                                      variant="primary"
+                                      onClick={() => handleAddToCalendar(ev)}
+                                    >
+                                      Add to Calendar{" "}
+                                      <CalendarIcon className="w-4 h-4" />{" "}
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {events.length > 0 && (
+          <section>
+            <h2
+              className={`text-xl font-medium mb-4 drop-shadow ${
+                events.filter((e) => joinedEventIds.includes(e.id)).length > 0
+                  ? "text-black md:text-black"
+                  : "text-black md:text-white"
+              }`}
+            >
+              All upcoming events
+            </h2>
+
+            <>
+              {loading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[...Array(6)].map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="space-y-3 p-4">
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-10 w-full rounded-md" />
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-10 w-full rounded-md" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : events.length === 0 ? (
+                <p className="text-black md:text-white">No upcoming events.</p>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {events.map((ev) => {
+                    const isGoing = joinedEventIds.includes(ev.id);
+                    const full = ev.attendees_count >= ev.capacity;
+                    const spotsLeft = ev.capacity - ev.attendees_count;
+
+                    return (
+                      <Card key={ev.id} className="relative overflow-hidden">
+                        <CardContent className="space-y-3 p-4 flex flex-col h-full">
+                          <div>
+                            <h3 className="text-lg font-semibold">
+                              {ev.title}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              <span className="capitalize">
+                                {ev.type === "training_subbed"
+                                  ? "training"
+                                  : ev.type}
+                              </span>
+                              {ev.description ? ` - ${ev.description}` : null}
+                            </p>
+                          </div>
+
+                          <div className="space-y-1 text-sm text-gray-600 flex-1">
+                            <div className="flex items-center gap-1">
+                              <CalendarIcon className="w-4 h-4" />{" "}
+                              {dayjs(ev.event_date).format("ddd, MMM D")}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <ClockIcon className="w-4 h-4" />{" "}
+                              {dayjs(ev.event_date).format("h:mm A")}
+                            </div>
+
+                            {(ev.type === "training" ||
+                              ev.type === "training_subbed") && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <UsersIcon className="w-4 h-4" />{" "}
+                                  {ev.attendees_count}/{ev.capacity} attending
+                                </div>
+                                <div className="pt-6">
+                                  <div className="w-full h-2 bg-gray-200 rounded-full">
+                                    <div
+                                      className="h-2 rounded-full"
+                                      style={{
+                                        width: `${
+                                          (ev.attendees_count / ev.capacity) *
+                                          100
+                                        }%`,
+                                        backgroundColor:
+                                          ev.attendees_count / ev.capacity < 0.5
+                                            ? "#3b82f6" // blue
+                                            : ev.attendees_count / ev.capacity <
+                                                0.8
+                                              ? "#f59e0b" // orange
+                                              : "#ef4444", // red
+                                      }}
+                                    />
+                                  </div>
+                                  <p
+                                    className="text-xs"
+                                    style={{
+                                      color:
+                                        ev.attendees_count / ev.capacity < 0.5
+                                          ? "#3b82f6"
+                                          : ev.attendees_count / ev.capacity <
+                                              0.8
+                                            ? "#f59e0b"
+                                            : "#ef4444",
+                                    }}
+                                  >
+                                    {spotsLeft > 0
+                                      ? `${spotsLeft} ${
+                                          spotsLeft === 1 ? "spot" : "spots"
+                                        } left`
+                                      : "Session full"}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          {ev.type === "game" ? (
                             <Button
                               className="w-full mt-auto"
                               variant="primary"
@@ -324,16 +494,47 @@ const Dashboard = () => {
                               Add to Calendar{" "}
                               <CalendarIcon className="w-4 h-4" />{" "}
                             </Button>
+                          ) : (
+                            <div className="flex gap-x-2">
+                              <Button
+                                className="w-full"
+                                variant={isGoing ? "secondary" : "primary"}
+                                onClick={() => {
+                                  if (isGoing) return;
+                                  setSelectedEventId(ev.id);
+                                  setShowPositionModal(true);
+                                }}
+                                disabled={full || credits < 1 || isGoing}
+                              >
+                                {isGoing
+                                  ? "You're going"
+                                  : full
+                                    ? "Full"
+                                    : credits < 1
+                                      ? "Not enough credits"
+                                      : "Attend event"}
+                              </Button>
+                              {isGoing && (
+                                <Button
+                                  className="w-full mt-auto"
+                                  variant="primary"
+                                  onClick={() => handleAddToCalendar(ev)}
+                                >
+                                  Add to Calendar{" "}
+                                  <CalendarIcon className="w-4 h-4" />{" "}
+                                </Button>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          </section>
+        )}
       </section>
 
       {/* Position selection modal */}
