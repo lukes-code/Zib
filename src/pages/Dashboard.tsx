@@ -176,12 +176,7 @@ const Dashboard = () => {
             <Button>Buy 1 credit</Button>
           </a>
           {!profile?.subscribed && (
-            <a
-              href={`https://buy.stripe.com/8x25kD1HAfhh1Mb65v4wM01?prefilled_email=${profile?.email}`}
-              target="_blank"
-            >
-              <Button>Set up monthly subs</Button>
-            </a>
+            <Button disabled>Set up monthly subs (full)</Button>
           )}
         </section>
 
